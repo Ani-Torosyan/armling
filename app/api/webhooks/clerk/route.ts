@@ -5,6 +5,9 @@ import { NextResponse } from "next/server";
 import { Webhook } from "lucide-react";
 import { createUser } from "@/db/actions/user.actions";*/
 
+import { NextResponse } from 'next/server';
+
 export async function POST(req: Request) {
-    console.log(req);
+   // Your API logic here
+   return NextResponse.json({ message: 'Success' });
 }
