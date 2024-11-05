@@ -8,8 +8,16 @@ const UserSchema = new Schema({
     },
     userName: {
         type: String,
+        required: true,
     },
     userImg: {
+        type: String,
+        required: true,
+    },
+    firstName: {
+        type: String,
+    },
+    lastName: {
         type: String,
     },
 });
