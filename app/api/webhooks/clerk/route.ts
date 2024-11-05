@@ -7,7 +7,7 @@ import { createUser } from "@/db/actions/user.actions";*/
 
 import { NextResponse } from 'next/server';
 
-export async function POST(req: Request) {
+export async function POST() {
    // Your API logic here
    return NextResponse.json({ message: 'Success' });
 }
