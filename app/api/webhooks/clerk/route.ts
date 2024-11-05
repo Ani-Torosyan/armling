@@ -47,7 +47,7 @@ export async function POST(req: Request) {
     const eventType = evt.type;
 
     if(eventType == "user.created") {
-        const {id, image_url, username} =
+        const {id, username, image_url} =
         evt.data;
 
         const user = {
@@ -68,6 +68,9 @@ export async function POST(req: Request) {
 
                 },
             });
+        }
+        else {
+            console.error("Failed to create user in MongoDB.");
         }
 
         return NextResponse.json({message: "New user created", user: newUser});
