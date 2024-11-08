@@ -1,4 +1,5 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { stat } from "fs";
 import { NextResponse } from "next/server";
 
 export async function GET() {
