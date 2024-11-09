@@ -22,7 +22,7 @@ const UserSchema = new Schema({
     },
     userHearts: {
         type: Number,
-        default: 4, 
+        default: 5, 
     },
     userExp: {
         type: Number,

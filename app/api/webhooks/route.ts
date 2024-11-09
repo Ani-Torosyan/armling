@@ -54,7 +54,7 @@ export async function POST(req: Request) {
     userImg: image_url,
     firstName: first_name,
     lastName: last_name,
-    userHearts: 4,
+    userHearts: 5,
     userExp: 0, 
     }
     console.log(user);

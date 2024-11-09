@@ -13,13 +13,3 @@ export async function createUser(user: any) {
         console.log(error);
     }
 }
-
-export async function getUserData(userId: string | null) {
-    try {
-        const user = await User.findOne({ clerkId: userId });
-        return user ? { userHearts: user.userHearts, userExp: user.userExp } : null;
-    } catch (error) {
-        console.error("Error fetching user data:", error);
-        return null;
-    }
-}
