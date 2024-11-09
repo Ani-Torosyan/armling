@@ -1,4 +1,4 @@
-import {Schema, model, models} from "mongoose";
+import { Schema, model, models } from "mongoose";
 
 const UserSchema = new Schema({
     clerkId: {
@@ -19,6 +19,14 @@ const UserSchema = new Schema({
     },
     lastName: {
         type: String,
+    },
+    userHearts: {
+        type: Number,
+        default: 5, 
+    },
+    userExp: {
+        type: Number,
+        default: 0, 
     },
 });
 
