@@ -18,7 +18,7 @@ const buttonVariants = cva(
         dangerOutline: "bg-custom text-red-500 hover:bg-customMid",
         super: "bg-violet-500 text-primary-foreground hover:bg-violet-500/90 border-violet-600 border-b-4 active:border-b-0",
         superOutline: "bg-custom text-violet-500 hover:bg-customMid",
-        ghost: "bg-transparent text-customDark border-transparent border-0 hover:bg-customMid",
+        ghost: "bg-transparent text-customDark border-transparent border-0",
         sidebar: "bg-transparent text-customDark border-transparent border-2 hover:bg-customMid transition-none",
         sidebarOutline: "bg-customShade/15 text-customDark border-customDark border-2 transition-none",
       },
