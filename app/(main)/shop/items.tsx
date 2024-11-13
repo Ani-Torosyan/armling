@@ -1,4 +1,4 @@
-"use client";
+/*"use client";
 
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -15,7 +15,7 @@ export const Items = ({
     time,
     sub,
 }: Props) => {
-    const [isSubscribed, setIsSubscribed] = useState(() => {                //TODO import sub from db, after implementing Stripe
+    const [isSubscribed, setIsSubscribed] = useState(false)() => {                //TODO import sub from db, after implementing Stripe
         const savedSubscription = localStorage.getItem("isSubscribed");
         return savedSubscription ? JSON.parse(savedSubscription) : sub;
     });
@@ -65,7 +65,7 @@ export const Items = ({
             </div>
         </ul>
     );
-};
+};*/
 
 
 

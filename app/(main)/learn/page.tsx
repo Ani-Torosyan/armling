@@ -4,18 +4,18 @@ import { FeedWrapper } from "@/components/feed-wrapper";
 import { StickyWrapper } from "@/components/sticky-wrapper";
 import { UserProgress } from "@/components/user-progress";
 import { Header } from "./header";
-import useShopData from "@/shopData"; 
+//import useShopData from "@/shopData"; 
 
 const LearnPage = () => {
-    const { hearts, points, hasActiveSubscription } = useShopData(); 
+    //const { hearts, points, hasActiveSubscription } = useShopData(); 
 
     return(
         <div className="flex flex-row-reverse gap-[48px] px-6"> 
             <StickyWrapper>
                 <UserProgress
-                hearts={hearts}  //TODO get userHearts & userExp & usersub from the db
-                points={points}
-                hasActiveSubscription={hasActiveSubscription}
+                hearts={5}  //TODO get userHearts & userExp & usersub from the db
+                points={0}
+                hasActiveSubscription={false}
                 />
             </StickyWrapper>
             <FeedWrapper>
