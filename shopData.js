@@ -1,4 +1,4 @@
-"use client"
+/*"use client"
 
 import { useState, useEffect } from "react";
 
@@ -47,4 +47,4 @@ const useShopData = () => {
     return { hearts, points, hasActiveSubscription, time };
 };
 
-export default useShopData;
+export default useShopData;*/

@@ -1,4 +1,4 @@
-"use client";
+/*"use client";
 
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -65,7 +65,7 @@ export const Items = ({
             </div>
         </ul>
     );
-};
+};*/
 
 
 
