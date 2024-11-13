@@ -22,14 +22,31 @@ const UserSchema = new Schema({
     },
     userHearts: {
         type: Number,
-        default: 5, 
+        default: 5,
     },
     userExp: {
         type: Number,
-        default: 0, 
+        default: 0,
+    },
+    reading: {
+        type: Number,
+        default: 0,
+    },
+    listening: {
+        type: Number,
+        default: 0,
+    },
+    speaking: {
+        type: Number,
+        default: 0,
+    },
+    writing: {
+        type: Number,
+        default: 0,
     },
 });
 
 const User = models?.User || model("User", UserSchema);
 
 export default User;
+
