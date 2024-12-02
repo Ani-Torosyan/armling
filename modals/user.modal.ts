@@ -29,20 +29,20 @@ const UserSchema = new Schema({
         default: 0,
     },
     reading: {
-        type: Number,
-        default: 0,
+        type: [String],
+        default: [],
     },
     listening: {
-        type: Number,
-        default: 0,
+        type: [String],
+        default: [],
     },
     speaking: {
-        type: Number,
-        default: 0,
+        type: [String],
+        default: [],
     },
     writing: {
-        type: Number,
-        default: 0,
+        type: [String],
+        default: [],
     },
 });
 
