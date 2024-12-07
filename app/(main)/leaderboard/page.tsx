@@ -3,28 +3,33 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-// Leaderboard Component
+type User = {
+    userName: string;
+    userExp: number;
+    userImg: string;
+    firstName: string;
+    lastName: string;
+};
+
 const Leaderboard = () => {
-    const [users, setUsers] = useState<any[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
 
     // Fetch leaderboard data
     const fetchData = async () => {
         try {
-            // Make API call to the backend to fetch leaderboard data
             const response = await axios.get("/api/leaderboard");
             const { users } = response.data;
             setUsers(users);
-            setLoading(false); // Stop loading when data is fetched
+            setLoading(false);
         } catch (error) {
             console.error("Error fetching leaderboard data:", error);
         }
     };
 
-    // Run fetchData on component mount
     useEffect(() => {
         fetchData();
-    }, []); // Empty dependency array means this runs only once when the component mounts
+    }, []);
 
     if (loading) {
         return <div className="text-white text-center p-10">Loading...</div>;
@@ -43,7 +48,7 @@ const Leaderboard = () => {
 
                 {users.map((user, index) => (
                     <div
-                        key={user._id}
+                        key={user.userName}
                         className={`flex justify-between items-center p-4 mt-2 rounded ${
                             index === 0
                                 ? "bg-gradient-to-r from-yellow-400 to-amber-500"
@@ -65,7 +70,10 @@ const Leaderboard = () => {
                                     : index + 1}
                             </span>
                             <div>
-                                <p>{user.userName || user.firstName || user.lastName}</p>
+                                <p>{user.userName}</p>
+                                <p className="text-sm text-gray-400">
+                                    {user.firstName} {user.lastName}
+                                </p>
                             </div>
                         </div>
                         <div className="text-right">{user.userExp}</div>
