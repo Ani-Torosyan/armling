@@ -11,18 +11,20 @@ const Leaderboard = () => {
     // Fetch leaderboard data
     const fetchData = async () => {
         try {
+            // Make API call to the backend to fetch leaderboard data
             const response = await axios.get("/api/leaderboard");
             const { users } = response.data;
             setUsers(users);
-            setLoading(false);
+            setLoading(false); // Stop loading when data is fetched
         } catch (error) {
             console.error("Error fetching leaderboard data:", error);
         }
     };
 
+    // Run fetchData on component mount
     useEffect(() => {
         fetchData();
-    }, []);
+    }, []); // Empty dependency array means this runs only once when the component mounts
 
     if (loading) {
         return <div className="text-white text-center p-10">Loading...</div>;
