@@ -36,7 +36,7 @@ const Leaderboard = () => {
     }
 
     return (
-        <div className="bg-black min-h-screen text-white">
+        <div className="bg-custom min-h-screen text-white">
             <div className="text-center p-5">
                 <h1 className="text-3xl font-bold">Leaderboard</h1>
             </div>
@@ -71,7 +71,7 @@ const Leaderboard = () => {
                             </span>
                             <div>
                                 <p>{user.userName}</p>
-                                <p className="text-sm text-gray-400">
+                                <p className="text-sm text-custom">
                                     {user.firstName} {user.lastName}
                                 </p>
                             </div>
