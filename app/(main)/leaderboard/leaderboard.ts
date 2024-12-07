@@ -1,29 +1,41 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextResponse } from "next/server";
 import { MongoClient } from "mongodb";
 
-const uri = "mongodb+srv://uni401753:HeLti3UvesCE0pK9@cluster0.5yati.mongodb.net";
-const client = new MongoClient(uri);
+// MongoDB URL from environment variable
+const uri = process.env.MONGODB_URL || "";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function GET() {
+    if (!uri) {
+        return NextResponse.json(
+            { error: "MongoDB URL is not defined" },
+            { status: 500 }
+        );
+    }
+
     try {
+        // Connect to MongoDB
+        const client = new MongoClient(uri);
         await client.connect();
-        const db = client.db("ArmLing");
-        const collection = db.collection("users");
 
-        const users = await collection
+        const database = client.db("Cluster0"); // Adjust to match your DB name
+        const usersCollection = database.collection("users");
+
+        // Fetch top 10 users sorted by userExp in descending order
+        const users = await usersCollection
             .find({})
-            .project({ _id: 0, clerkId: 1, userName: 1, userImg: 1, firstName: 1, lastName: 1, userExp: 1 })
+            .sort({ userExp: -1 })
+            .limit(10)
             .toArray();
 
-        const currentUserId = req.query.currentUserId; // Pass current user ID from the frontend
-
-        const currentUser = users.find(user => user.clerkId === currentUserId);
-
-        res.status(200).json({ currentUser, users });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Unable to fetch leaderboard data" });
-    } finally {
         await client.close();
+
+        // Return users as JSON
+        return NextResponse.json({ users });
+    } catch (error) {
+        console.error("Error fetching leaderboard data:", error);
+        return NextResponse.json(
+            { error: "Internal server error" },
+            { status: 500 }
+        );
     }
 }
