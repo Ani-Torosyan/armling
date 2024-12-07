@@ -2,15 +2,30 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
+import Image from "next/image";
+
+type User = {
+    clerkId: string;
+    userName: string;
+    userImg: string;
+    firstName: string;
+    lastName: string;
+    userHearts: number;
+    userExp: number;
+    reading: string[];
+    listening: string[];
+    speaking: string[];
+    writing: string[];
+};
 
 const Leaderboard = () => {
-    const [currentUser, setCurrentUser] = useState<any>(null);
-    const [users, setUsers] = useState<any>([]);
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
+    const [users, setUsers] = useState<User[]>([]);
 
     useEffect(() => {
-        const fetchUserData = async () => {
+        const fetchData = async () => {
             try {
-                const response = await axios.get("./leaderboard");
+                const response = await axios.get("/api/leaderboard");
                 const { currentUser, users } = response.data;
                 setCurrentUser(currentUser);
                 setUsers(users);
@@ -19,13 +34,13 @@ const Leaderboard = () => {
             }
         };
 
-        fetchUserData();
+        fetchData();
 
-        const intervalId = setInterval(fetchUserData, 5000);
+        const intervalId = setInterval(fetchData, 5000);
         return () => clearInterval(intervalId);
     }, []);
 
-    const sortedUsers = [...users].sort((a: any, b: any) => b.userExp - a.userExp);
+    const sortedUsers = [...users].sort((a, b) => b.userExp - a.userExp);
     const currentUserIndex = sortedUsers.findIndex(
         (user) => user.clerkId === currentUser?.clerkId
     );
@@ -62,15 +77,14 @@ const Leaderboard = () => {
                                 ? "🥉"
                                 : index + 1}
                         </p>
-                        <img
+                        <Image
                             src={user.userImg}
-                            alt={user.userName}
-                            className="w-8 h-8 rounded-full"
+                            alt={user.userName || `${user.firstName} ${user.lastName}`}
+                            width={32}
+                            height={32}
+                            className="rounded-full"
                         />
-                        <p>
-                            {user.userName ||
-                                `${user.firstName} ${user.lastName}`}
-                        </p>
+                        <p>{user.userName || `${user.firstName} ${user.lastName}`}</p>
                     </div>
                     <p>{user.userExp}</p>
                 </div>
@@ -79,15 +93,14 @@ const Leaderboard = () => {
                 <div className="p-5 flex justify-between items-center bg-gradient-to-r from-red-500 to-red-700">
                     <div className="flex items-center gap-3">
                         <p>{currentUserIndex + 1}</p>
-                        <img
+                        <Image
                             src={currentUser.userImg}
-                            alt={currentUser.userName}
-                            className="w-8 h-8 rounded-full"
+                            alt={currentUser.userName || `${currentUser.firstName} ${currentUser.lastName}`}
+                            width={32}
+                            height={32}
+                            className="rounded-full"
                         />
-                        <p>
-                            {currentUser.userName ||
-                                `${currentUser.firstName} ${currentUser.lastName}`}
-                        </p>
+                        <p>{currentUser.userName || `${currentUser.firstName} ${currentUser.lastName}`}</p>
                     </div>
                     <p>{currentUser.userExp}</p>
                 </div>
