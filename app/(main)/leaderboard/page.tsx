@@ -36,7 +36,7 @@ const Leaderboard = () => {
     }
 
     return (
-        <div className="bg-custom min-h-screen text-white">
+        <div className="bg-custom min-h-screen text-black">
             <div className="text-center p-5">
                 <h1 className="text-3xl font-bold">Leaderboard</h1>
             </div>
