@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { FeedWrapper } from "@/components/feed-wrapper";
+import { Header } from "../header";
 
 type User = {
     userName: string;
@@ -13,15 +15,12 @@ type User = {
 
 const Leaderboard = () => {
     const [users, setUsers] = useState<User[]>([]);
-    const [loading, setLoading] = useState(true);
 
-    // Fetch leaderboard data
     const fetchData = async () => {
         try {
             const response = await axios.get("/api/leaderboard");
             const { users } = response.data;
             setUsers(users);
-            setLoading(false);
         } catch (error) {
             console.error("Error fetching leaderboard data:", error);
         }
@@ -31,21 +30,23 @@ const Leaderboard = () => {
         fetchData();
     }, []);
 
-    if (loading) {
-        return <div className="text-white text-center p-10">Loading...</div>;
-    }
+return (
+        <div className="text-customDark">
+            <FeedWrapper>
+                <Header title="Leaderboard" />
+                <div className="space-y-4"/>
+            </FeedWrapper>
 
-    return (
-        <div className="bg-custom min-h-screen text-black">
-            <div className="text-center p-5">
-                <h1 className="text-3xl font-bold">Leaderboard</h1>
-            </div>
             <div className="p-5">
-                <div className="grid grid-cols-2 gap-4 font-bold border-b border-gray-700 pb-3">
-                    <div>👑 Username</div>
-                    <div className="text-right">EXP</div>
-                </div>
 
+                <div className="grid grid-cols-2 gap-4 font-bold">
+                        <div className="flex items-center">
+                            <img src="/crown.svg" alt="Crown" className="w-6 h-6 mr-2" />
+                                Username
+                        </div>
+                        <div className="text-right">EXP</div>
+                </div>
+            
                 {users.map((user, index) => (
                     <div
                         key={user.userName}
@@ -56,22 +57,22 @@ const Leaderboard = () => {
                                 ? "bg-gradient-to-r from-gray-300 to-gray-500"
                                 : index === 2
                                 ? "bg-gradient-to-r from-yellow-600 to-amber-700"
-                                : "bg-gray-800"
+                                : "bg-custom"
                         }`}
                     >
                         <div className="flex items-center gap-4">
                             <span>
                                 {index === 0
-                                    ? "🥇"
+                                    ? <img src="/1.svg" alt="First place" className="w-6 h-6" />
                                     : index === 1
-                                    ? "🥈"
+                                    ? <img src="/2.svg" alt="Second place" className="w-6 h-6" />
                                     : index === 2
-                                    ? "🥉"
+                                    ? <img src="/3.svg" alt="Third place" className="w-6 h-6" />
                                     : index + 1}
                             </span>
                             <div>
                                 <p>{user.userName}</p>
-                                <p className="text-sm text-custom">
+                                <p className="text-sm text-customShade">
                                     {user.firstName} {user.lastName}
                                 </p>
                             </div>

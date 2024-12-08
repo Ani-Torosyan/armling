@@ -3,7 +3,7 @@
 import { FeedWrapper } from "@/components/feed-wrapper";
 import { StickyWrapper } from "@/components/sticky-wrapper";
 import { UserProgress } from "@/components/user-progress";
-import Image from "next/image";
+import { Header } from "../header";
 //import { Items } from "./items";
 //import useShopData from "@/shopData"; 
 
@@ -19,18 +19,10 @@ const ShopPage = () => {
                     hasActiveSubscription={false}
                 />
             </StickyWrapper>
-
             <FeedWrapper>
-                <div className="w-full flex flex-col items-center">
-                    <Image 
-                        src="/shop.svg"
-                        alt="Shop"
-                        height={70}
-                        width={70}
-                    />
-                    <h1 className="text-center font-bold text-customDark text-2xl my-6">
-                        Shop
-                    </h1>
+                <div>
+                    <Header title="Shop" />
+                    <div className="space-y-4"/>
                 </div>
             </FeedWrapper>
         </div>

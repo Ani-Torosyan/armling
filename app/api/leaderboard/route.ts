@@ -15,11 +15,9 @@ export async function GET() {
         const client = new MongoClient(uri);
         await client.connect();
 
-        // Connect to the "ArmLing" database and "users" collection
-        const database = client.db("ArmLing"); // Use your correct DB name
-        const usersCollection = database.collection("users"); // Use your correct collection name
+        const database = client.db("ArmLing");
+        const usersCollection = database.collection("users");
 
-        // Fetch top 10 users sorted by userExp in descending order
         const users = await usersCollection
             .find({})
             .sort({ userExp: -1 })
