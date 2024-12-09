@@ -3,21 +3,23 @@ import { connect } from "@/db";
 
 export async function heartRefillJob() {
   try {
-    await connect();
+    await connect(); // Ensure MongoDB connection is established
 
     // Define the maximum number of hearts
     const MAX_HEARTS = 5;
 
-    // Update all users who need heart refill
+    // Get the current time
     const now = new Date();
+
+    // Update all users who need a heart refill
     await User.updateMany(
       {
-        userHearts: { $lt: MAX_HEARTS }, // Users with less than max hearts
-        lastHeartUpdate: { $lte: new Date(now.getTime() - 5 * 60 * 1000) }, // Last update more than 5 minutes ago
+        userHearts: { $lt: MAX_HEARTS }, // Users with less than 5 hearts
+        lastHeartUpdate: { $lte: new Date(now.getTime() - 5 * 60 * 1000) }, // Last update was more than 5 minutes ago
       },
       {
-        $inc: { userHearts: 1 }, // Increment hearts by 1
-        $set: { lastHeartUpdate: now }, // Update the last heart update time
+        $inc: { userHearts: 1 }, // Increment the heart count by 1
+        $set: { lastHeartUpdate: now }, // Update the last heart update timestamp
       }
     );
 
