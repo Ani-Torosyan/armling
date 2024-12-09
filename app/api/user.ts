@@ -1,23 +1,33 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { connect } from '@/db'; // Your MongoDB connection function
-import User from '@/modals/user.modal'; // Your User model
+import { connect } from '@/db'; // MongoDB connection function
+import User from '@/modals/user.modal'; // MongoDB User model
 
 export async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
         await connect(); // Connect to the database
-        const { clerkId } = req.query; // Get clerkId from the query params (you can also get it from the session)
 
-        if (!clerkId) {
-            return res.status(400).json({ message: 'Clerk ID is required' });
+        const { userId } = req.query; // Get userId from query parameters
+
+        if (!userId) {
+            return res.status(400).json({ message: 'User ID is required' });
         }
 
-        const user = await User.findOne({ clerkId }); // Find user by clerkId
+        // Find the user by userId (Clerk's userId)
+        const user = await User.findOne({ clerkId: userId });
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        return res.status(200).json(user); // Return the user data
+        // Return necessary user data
+        return res.status(200).json({
+            userName: user.userName,
+            userExp: user.userExp,
+            userImg: user.userImg,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            userHearts: user.userHearts
+        });
     } catch (error) {
         console.error('Error fetching user data:', error);
         return res.status(500).json({ message: 'Internal Server Error' });

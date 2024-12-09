@@ -25,7 +25,7 @@ const ShopPage = () => {
         const fetchUserData = async () => {
             try {
                 if (!user?.id) return; // If there's no user, stop fetching
-                const response = await fetch(`/api/user?clerkId=${user.id}`);
+                const response = await fetch(`/api/user?userId=${user.id}`); // Pass userId instead of clerkId
                 if (response.ok) {
                     const data = await response.json();
                     setUserData(data); // Set user data in state
