@@ -10,8 +10,6 @@ type User = {
     userId: string;
     username: string;
     hearts: number;
-    exp: number;
-    img: string;
 };
 
 const ShopPage = () => {
@@ -28,7 +26,7 @@ const ShopPage = () => {
                     return;
                 }
                 const { data } = await dataResponse.json();
-                const { userId } = data;
+                const { userId, username } = data;
 
                 // Step 2: Use userId to fetch full user data from MongoDB
                 const userResponse = await fetch(`/api/user?userId=${userId}`);
@@ -37,8 +35,13 @@ const ShopPage = () => {
                     return;
                 }
                 const userData = await userResponse.json();
-                console.log("Fetched full user data:", userData);
-                setUserData(userData);
+
+                // Combine username from /api/data and hearts from MongoDB
+                setUserData({
+                    userId,
+                    username,
+                    hearts: userData.userHearts, // Retrieved from MongoDB
+                });
             } catch (error) {
                 console.error("Error fetching user data:", error);
             } finally {
@@ -62,7 +65,7 @@ const ShopPage = () => {
             <StickyWrapper>
                 <UserProgress
                     hearts={userData.hearts} // Use fetched hearts
-                    points={userData.exp} // Use fetched experience points
+                    points={0} // Placeholder, adjust if you track points
                     hasActiveSubscription={false}
                 />
             </StickyWrapper>
