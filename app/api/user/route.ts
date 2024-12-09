@@ -1,31 +1,38 @@
-import { NextRequest, NextResponse } from "next/server";
-import User from "@/modals/user.modal";
-import { connect } from "@/db";
+import { NextApiRequest, NextApiResponse } from 'next';
+import { connect } from '@/db'; // MongoDB connection function
+import User from '@/modals/user.modal'; // MongoDB User model
 
-export async function GET(request: NextRequest) {
+export async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
-        const url = new URL(request.url);
-        const userId = url.searchParams.get('userId');
+        await connect(); // Connect to the database
+
+        const { userId } = req.query; // Get userId from query parameters
 
         if (!userId) {
-            return NextResponse.json({ message: "User ID is required" }, { status: 400 });
+            return res.status(400).json({ message: 'User ID is required' });
         }
 
-        await connect();
-
+        // Find the user by userId (Clerk's userId)
         const user = await User.findOne({ clerkId: userId });
 
         if (!user) {
-            return NextResponse.json({ message: "User not found" }, { status: 404 });
+            return res.status(404).json({ message: 'User not found' });
         }
 
-        return NextResponse.json({
-            userHearts: user.userHearts,
+        // Return necessary user data, including the last heart update
+        return res.status(200).json({
             userName: user.userName,
+            userExp: user.userExp,
             userImg: user.userImg,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            userHearts: user.userHearts,
+            lastHeartUpdate: user.lastHeartUpdate,
         });
     } catch (error) {
-        console.error("Error fetching user data:", error);
-        return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+        console.error('Error fetching user data:', error);
+        return res.status(500).json({ message: 'Internal Server Error' });
     }
 }
+
+export default handler;

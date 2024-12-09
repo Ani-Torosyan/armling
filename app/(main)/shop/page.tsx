@@ -1,83 +1,93 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useClerk } from "@clerk/nextjs"; // To get the current user's clerkId
 import { StickyWrapper } from "@/components/sticky-wrapper";
 import { FeedWrapper } from "@/components/feed-wrapper";
 import { UserProgress } from "@/components/user-progress";
 import { Header } from "../header";
 
 type User = {
-    userId: string;
-    username: string;
-    hearts: number;
+    userName: string;
+    userExp: number;
+    userImg: string;
+    firstName: string;
+    lastName: string;
+    userHearts: number;
+    lastHeartUpdate: string; // Add the lastHeartUpdate field
 };
 
 const ShopPage = () => {
-    const [userData, setUserData] = useState<User | null>(null);
-    const [loading, setLoading] = useState(true);
+    const { user } = useClerk(); // Get the current user from Clerk
+    const [userData, setUserData] = useState<User | null>(null); // Store user data here
+    const [loading, setLoading] = useState(true); // For loading state
+    const [timeUntilRefill, setTimeUntilRefill] = useState<string>("");
 
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                // Step 1: Fetch userId from /api/data
-                const dataResponse = await fetch("/api/data");
-                if (!dataResponse.ok) {
-                    console.error("Error fetching /api/data:", await dataResponse.text());
-                    return;
+                if (!user?.id) return; // If there's no user, stop fetching
+                const response = await fetch(`/api/user?userId=${user.id}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setUserData(data); // Set user data in state
+                } else {
+                    console.error("Error fetching user data");
                 }
-                const { data } = await dataResponse.json();
-                const { userId, username } = data;
-
-                // Step 2: Use userId to fetch full user data from MongoDB
-                const userResponse = await fetch(`/api/user?userId=${userId}`);
-                if (!userResponse.ok) {
-                    console.error("Error fetching user data from MongoDB:", await userResponse.text());
-                    return;
-                }
-                const userData = await userResponse.json();
-
-                // Combine username from /api/data and hearts from MongoDB
-                setUserData({
-                    userId,
-                    username,
-                    hearts: userData.userHearts, // Retrieved from MongoDB
-                });
             } catch (error) {
                 console.error("Error fetching user data:", error);
             } finally {
-                setLoading(false);
+                setLoading(false); // Stop loading when data is fetched
             }
         };
 
-        fetchUserData(); // Fetch data
-    }, []);
+        if (user) {
+            fetchUserData(); // Call the function to fetch user data
+        }
+    }, [user]); // Re-run the effect when `user` changes
+
+    useEffect(() => {
+        // Calculate time until the next refill
+        if (userData && userData.lastHeartUpdate) {
+            const lastHeartUpdate = new Date(userData.lastHeartUpdate);
+            const now = new Date();
+            const refillTime = new Date(lastHeartUpdate.getTime() + 5 * 60 * 1000); // Add 5 minutes for the next refill
+            const timeDiff = refillTime.getTime() - now.getTime();
+
+            if (timeDiff > 0) {
+                const minutes = Math.floor(timeDiff / 60000);
+                const seconds = Math.floor((timeDiff % 60000) / 1000);
+                setTimeUntilRefill(`${minutes}m ${seconds}s`);
+            } else {
+                setTimeUntilRefill("Ready for refill!");
+            }
+        }
+    }, [userData]); // Recalculate when user data changes
 
     if (loading) {
-        return <div>Loading...</div>; // Show loading state
+        return <div>Loading...</div>; // Loading state while fetching
     }
 
     if (!userData) {
-        return <div>No user data available</div>; // Handle missing data
+        return <div>No user data available</div>; // Handle case if there's no user data
     }
 
     return (
         <div className="flex flex-row-reverse gap-[48px] px-6">
             <StickyWrapper>
                 <UserProgress
-                    hearts={userData.hearts} // Use fetched hearts
-                    points={0} // Placeholder, adjust if you track points
+                    hearts={userData.userHearts}
+                    points={userData.userExp}
                     hasActiveSubscription={false}
                 />
             </StickyWrapper>
             <FeedWrapper>
                 <div>
                     <Header title="Shop" />
-                    <div className="space-y-4" />
-
-                    {/* Debugging: Display fetched full user data */}
-                    <div>
-                        <h2>Debugging Full User Data</h2>
-                        <pre>{JSON.stringify(userData, null, 2)}</pre>
+                    <div className="space-y-4">
+                        <p>
+                            Time until next heart refill: {timeUntilRefill}
+                        </p>
                     </div>
                 </div>
             </FeedWrapper>
