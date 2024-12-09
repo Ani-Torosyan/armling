@@ -24,25 +24,30 @@ const ShopPage = () => {
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                if (!user?.id) return; // If there's no user, stop fetching
-                const response = await fetch(`/api/user?userId=${user.id}`); // Pass userId instead of clerkId
+                if (!user?.id) {
+                    console.error("User ID is missing");
+                    return;
+                }
+                console.log("Fetching data for user ID:", user.id);
+                const response = await fetch(`/api/user?userId=${user.id}`);
+                console.log("Response status:", response.status);
                 if (response.ok) {
                     const data = await response.json();
-                    setUserData(data); // Set user data in state
+                    console.log("User data fetched:", data);
+                    setUserData(data);
                 } else {
-                    console.error("Error fetching user data");
+                    console.error("Error fetching user data:", await response.text());
                 }
             } catch (error) {
                 console.error("Error fetching user data:", error);
             } finally {
-                setLoading(false); // Stop loading when data is fetched
+                setLoading(false);
             }
         };
-
-        if (user) {
-            fetchUserData(); // Call the function to fetch user data
-        }
-    }, [user]); // Re-run the effect when `user` changes
+    
+        fetchUserData();
+    }, [user]);
+    
 
     if (loading) {
         return <div>Loading...</div>; // Loading state while fetching
