@@ -58,7 +58,10 @@ const ShopPage = () => {
                 const minutes = Math.floor(timeDiff / 60000);
                 const seconds = Math.floor((timeDiff % 60000) / 1000);
                 setTimeUntilRefill(`${minutes}m ${seconds}s`);
-            } else {
+            } else if (userData.userHearts == 5) {
+                setTimeUntilRefill("You have full hearts!");
+            } 
+            else {
                 setTimeUntilRefill("Ready for refill!");
             }
         }
