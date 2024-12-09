@@ -8,10 +8,14 @@ const userSchema = new mongoose.Schema({
   lastName: { type: String },
   userHearts: { type: Number, default: 5, max: 5 },
   userExp: { type: Number, default: 0 },
-  reading: { type: Number, default: 0 },
-  listening: { type: Number, default: 0 },
-  speaking: { type: Number, default: 0 },
-  writing: { type: Number, default: 0 },
+  reading: { type: [String],
+    default: [], },
+  listening: { type: [String],
+    default: [], },
+  speaking: { type: [String],
+    default: [], },
+  writing: { type: [String],
+    default: [], },
   lastHeartUpdate: { type: Date, default: new Date() }, // Timestamp for heart refill
 });
 
