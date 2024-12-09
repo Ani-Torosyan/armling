@@ -1,80 +1,67 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react';
-import { FeedWrapper } from "@/components/feed-wrapper";
+import { useState, useEffect } from "react";
+import { useClerk } from "@clerk/nextjs"; // To get the current user's Clerk ID
 import { StickyWrapper } from "@/components/sticky-wrapper";
+import { FeedWrapper } from "@/components/feed-wrapper";
 import { UserProgress } from "@/components/user-progress";
 import { Header } from "../header";
 import { Promo } from "@/components/promo";
 
-// A custom hook to fetch the user data
-const useUserData = (userId: string | null) => {
-    const [userData, setUserData] = useState<any>(null);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+const LearnPage = () => {
+    const { user } = useClerk(); // Get the current user from Clerk
+    const [userData, setUserData] = useState<{ userHearts: number; userExp: number } | null>(null); // Store user data here
+    const [loading, setLoading] = useState(true); // For loading state
+    const [timeUntilRefill, setTimeUntilRefill] = useState<string>("");
 
     useEffect(() => {
-        if (!userId) return;  // If userId is null, do not proceed with fetching
-
         const fetchUserData = async () => {
             try {
-                const response = await fetch(`/api/user?userId=${userId}`);
-                if (!response.ok) {
-                    throw new Error("Failed to fetch user data");
+                if (!user?.id) return; // If there's no user, stop fetching
+                const response = await fetch(`/api/user?userId=${user.id}`); // Assuming the user data API
+                if (response.ok) {
+                    const data = await response.json();
+                    setUserData(data); // Set user data in state
+                } else {
+                    console.error("Error fetching user data");
                 }
-                const data = await response.json();
-                setUserData(data); // Set user data from the API response
-            } catch (err) {
-                setError("Error fetching user data");
+            } catch (error) {
+                console.error("Error fetching user data:", error);
             } finally {
-                setLoading(false);
+                setLoading(false); // Stop loading when data is fetched
             }
         };
 
-        fetchUserData();
-    }, [userId]);
+        if (user) {
+            fetchUserData(); // Call the function to fetch user data
+        }
+    }, [user]); // Re-run the effect when `user` changes
 
-    return { userData, loading, error };
-};
+    // Handling loading state
+    if (loading) {
+        return <div>Loading...</div>;
+    }
 
-const LearnPage = () => {
-    const [userId, setUserId] = useState<string | null>(null);
-
-    useEffect(() => {
-        const fetchCurrentUser = async () => {
-            const response = await fetch('/api/data'); // Endpoint to get current user data
-            const data = await response.json();
-            if (data?.userId) {
-                setUserId(data.userId); // Set userId from the response
-            }
-        };
-
-        fetchCurrentUser();
-    }, []);
-
-    // Only call useUserData if userId is defined (not null)
-    const { userData, loading, error } = useUserData(userId);
-
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>{error}</div>;
-
-    const hearts = userData?.userHearts ?? 0;
-    const points = userData?.userExp ?? 0;
-    const hasActiveSubscription = userData?.userExp > 0; // Assuming exp > 0 means the user has an active subscription
+    // Handling case where user data isn't available
+    if (!userData) {
+        return <div>No user data available</div>;
+    }
 
     return (
-        <div className="flex flex-row-reverse gap-[48px] px-6"> 
+        <div className="flex flex-row-reverse gap-[48px] px-6">
             <StickyWrapper>
                 <UserProgress
-                    hearts={hearts}  // Get user hearts from API response
-                    points={points}  // Get user points from API response
-                    hasActiveSubscription={hasActiveSubscription} // Check subscription status
+                    hearts={userData.userHearts}  // Set hearts from MongoDB
+                    points={userData.userExp}  // Set points from MongoDB
+                    hasActiveSubscription={false}  // Assuming false here, you can adjust logic as necessary
                 />
-                {!hasActiveSubscription && <Promo />}  {/* Show promo only if there's no active subscription */}
+                <Promo />
             </StickyWrapper>
             <FeedWrapper>
                 <Header title="Home" />
-                <div className="space-y-4" />
+                <div className="space-y-4">
+                    {/* Additional content can go here */}
+                </div>
             </FeedWrapper>
         </div>
     );
