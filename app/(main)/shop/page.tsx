@@ -21,6 +21,18 @@ const ShopPage = () => {
     const [userData, setUserData] = useState<User | null>(null); // Store user data here
     const [loading, setLoading] = useState(true); // For loading state
 
+
+
+    if (!user) {
+        return <div>Loading...</div>;
+    }
+
+    const clerkId = user.id; // Get the unique Clerk ID
+    console.log("Current Clerk ID:", clerkId);
+
+    <div>Clerk ID: {clerkId}</div>;
+
+
     useEffect(() => {
         const fetchUserData = async () => {
             try {
