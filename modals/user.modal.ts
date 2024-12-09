@@ -16,6 +16,8 @@ const userSchema = new mongoose.Schema({
     default: [], },
   writing: { type: [String],
     default: [], },
+    lesson: { type: [String],
+      default: [], },
   lastHeartUpdate: { type: Date, default: new Date() }, // Timestamp for heart refill
 });
 
