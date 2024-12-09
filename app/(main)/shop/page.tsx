@@ -21,9 +21,10 @@ const ShopPage = () => {
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const response = await fetch("/api/data"); // Fetch from your existing API route
+                const response = await fetch("/api/data"); // Fetch from your API route
                 if (response.ok) {
                     const data = await response.json();
+                    console.log("Fetched user data:", data.data); // Log user data to console
                     setUserData(data.data); // Extract user data
                 } else {
                     console.error("Error fetching user data:", await response.text());
@@ -59,6 +60,12 @@ const ShopPage = () => {
                 <div>
                     <Header title="Shop" />
                     <div className="space-y-4" />
+
+                    {/* Debugging: Display fetched user data */}
+                    <div>
+                        <h2>Debugging User Data</h2>
+                        <pre>{JSON.stringify(userData, null, 2)}</pre>
+                    </div>
                 </div>
             </FeedWrapper>
         </div>
