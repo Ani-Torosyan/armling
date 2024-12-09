@@ -12,7 +12,6 @@ const LearnPage = () => {
     const { user } = useClerk(); // Get the current user from Clerk
     const [userData, setUserData] = useState<{ userHearts: number; userExp: number } | null>(null); // Store user data here
     const [loading, setLoading] = useState(true); // For loading state
-    const [timeUntilRefill, setTimeUntilRefill] = useState<string>("");
 
     useEffect(() => {
         const fetchUserData = async () => {
