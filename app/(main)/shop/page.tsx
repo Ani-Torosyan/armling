@@ -21,14 +21,24 @@ const ShopPage = () => {
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const response = await fetch("/api/data"); // Fetch from your API route
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log("Fetched user data:", data.data); // Log user data to console
-                    setUserData(data.data); // Extract user data
-                } else {
-                    console.error("Error fetching user data:", await response.text());
+                // Step 1: Fetch userId from /api/data
+                const dataResponse = await fetch("/api/data");
+                if (!dataResponse.ok) {
+                    console.error("Error fetching /api/data:", await dataResponse.text());
+                    return;
                 }
+                const { data } = await dataResponse.json();
+                const { userId } = data;
+
+                // Step 2: Use userId to fetch full user data from MongoDB
+                const userResponse = await fetch(`/api/user?userId=${userId}`);
+                if (!userResponse.ok) {
+                    console.error("Error fetching user data from MongoDB:", await userResponse.text());
+                    return;
+                }
+                const userData = await userResponse.json();
+                console.log("Fetched full user data:", userData);
+                setUserData(userData);
             } catch (error) {
                 console.error("Error fetching user data:", error);
             } finally {
@@ -36,23 +46,23 @@ const ShopPage = () => {
             }
         };
 
-        fetchUserData(); // Call the function to fetch user data
+        fetchUserData(); // Fetch data
     }, []);
 
     if (loading) {
-        return <div>Loading...</div>; // Show a loading state
+        return <div>Loading...</div>; // Show loading state
     }
 
     if (!userData) {
-        return <div>No user data available</div>; // Handle missing user data
+        return <div>No user data available</div>; // Handle missing data
     }
 
     return (
         <div className="flex flex-row-reverse gap-[48px] px-6">
             <StickyWrapper>
                 <UserProgress
-                    hearts={userData.hearts} // Display hearts from fetched data
-                    points={userData.exp} // Display experience points from fetched data
+                    hearts={userData.hearts} // Use fetched hearts
+                    points={userData.exp} // Use fetched experience points
                     hasActiveSubscription={false}
                 />
             </StickyWrapper>
@@ -61,9 +71,9 @@ const ShopPage = () => {
                     <Header title="Shop" />
                     <div className="space-y-4" />
 
-                    {/* Debugging: Display fetched user data */}
+                    {/* Debugging: Display fetched full user data */}
                     <div>
-                        <h2>Debugging User Data</h2>
+                        <h2>Debugging Full User Data</h2>
                         <pre>{JSON.stringify(userData, null, 2)}</pre>
                     </div>
                 </div>
