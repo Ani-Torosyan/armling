@@ -23,15 +23,6 @@ const ShopPage = () => {
 
 
 
-    if (!user) {
-        return <div>Loading...</div>;
-    }
-
-    const clerkId = user.id; // Get the unique Clerk ID
-    console.log("Current Clerk ID:", clerkId);
-
-    <div>Clerk ID: {clerkId}</div>;
-
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -66,7 +57,8 @@ const ShopPage = () => {
     }
 
     if (!userData) {
-        return <div>No user data available</div>; // Handle case if there's no user data
+        return <div>No user data available Clerk ID: {userData}</div>; 
+       ;
     }
 
     return (
