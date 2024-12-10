@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@clerk/clerk-sdk-node": "^5.0.58",
-    "@clerk/nextjs": "^6.2.0",
+    "@clerk/nextjs": "^6.8.2",
     "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-slot": "^1.1.0",
     "@stripe/stripe-js": "^4.9.0",
