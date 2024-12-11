@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
     default: [], },
     lesson: { type: [String],
       default: [], },
-  lastHeartUpdate: { type: Date, default: new Date() }, // Timestamp for heart refill
+  lastHeartUpdate: { type: Date, default: new Date() }, 
 });
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);

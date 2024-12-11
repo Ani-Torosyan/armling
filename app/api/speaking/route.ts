@@ -17,7 +17,6 @@ export async function GET() {
 
         const database = client.db("ArmLing");
 
-        // Fetch data from SpeakingExercise
         const SpeakingExerciseCollection = database.collection("SpeakingExercise");
         const SpeakingExercise = await SpeakingExerciseCollection.find({}).toArray();
 
@@ -45,7 +44,6 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { userId, exerciseId, audioUrl } = body;
 
-        // Validate required fields
         if (!userId || !exerciseId || !audioUrl) {
             return NextResponse.json(
                 { error: "Missing required fields: userId, exerciseId, or audioUrl" },
@@ -58,7 +56,6 @@ export async function POST(request: Request) {
 
         const database = client.db("ArmLing");
 
-        // Save the recording metadata in a new collection
         const UserRecordingsCollection = database.collection("UserRecordings");
         await UserRecordingsCollection.insertOne({
             userId,

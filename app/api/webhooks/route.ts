@@ -12,7 +12,6 @@ export async function POST(req: Request) {
     throw new Error("Please add WEBHOOK_SECRET from Clerk Dashboard to .env or .env.local");
   }
 
-  // Await headers and extract their values
   const headerPayload = await headers();
   const svix_id = headerPayload.get("svix-id");
   const svix_timestamp = headerPayload.get("svix-timestamp");
@@ -57,7 +56,7 @@ export async function POST(req: Request) {
       listening: 0,
       speaking: 0,
       writing: 0,
-      lastHeartUpdate: new Date(), // Initialize at signup
+      lastHeartUpdate: new Date(), 
     };
     console.log(user);
 

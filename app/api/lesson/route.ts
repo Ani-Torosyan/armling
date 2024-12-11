@@ -17,11 +17,9 @@ export async function GET() {
 
         const database = client.db("ArmLing");
         
-        // Fetch data from LessonUnits
         const lessonUnitsCollection = database.collection("LessonUnits");
         const lessonUnits = await lessonUnitsCollection.find({}).toArray();
 
-        // Fetch data from LessonExercise
         const lessonExercisesCollection = database.collection("LessonExercise");
         const lessonExercises = await lessonExercisesCollection.find({}).toArray();
 

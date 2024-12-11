@@ -10,6 +10,8 @@ import { UserProgress } from "@/components/user-progress";
 import { StickyWrapper } from "@/components/sticky-wrapper";
 import { Button } from "@/components/ui/button";
 import { Promo } from "@/components/promo";
+import Loading from "../loading";
+import { Ghost } from "lucide-react";
 
 interface LessonUnit {
   _id: string;
@@ -29,10 +31,9 @@ interface LessonExercise {
 }
 
 const LessonPage = () => {
-  const { user } = useClerk(); // Get the current user from Clerk
+  const { user } = useClerk();
   const router = useRouter();
 
-  // States
   const [lessonUnits, setLessonUnits] = useState<LessonUnit[]>([]);
   const [lessonExercises, setLessonExercises] = useState<LessonExercise[]>([]);
   const [selectedExercise, setSelectedExercise] = useState<LessonExercise | null>(null);
@@ -44,7 +45,7 @@ const LessonPage = () => {
   const [userData, setUserData] = useState<{ userHearts: number; userExp: number } | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const completedExercises = new Set<string>(); // Track exercises already answered correctly
+  const completedExercises = new Set<string>(); 
 
   useEffect(() => {
     const fetchLessonData = async () => {
@@ -59,14 +60,14 @@ const LessonPage = () => {
     };
 
     const fetchUserData = async () => {
-      if (!user?.id) return; // Ensure we have a user ID
+      if (!user?.id) return; 
       try {
         const response = await fetch(`/api/user?userId=${user.id}`);
         if (response.ok) {
           const data = await response.json();
           setUserData(data);
-          setHearts(data.userHearts || 5); // Set initial hearts from user data
-          setPoints(data.userExp || 0); // Set initial points from user data
+          setHearts(data.userHearts || 5); 
+          setPoints(data.userExp || 0); 
         } else {
           console.error("Error fetching user data");
         }
@@ -83,7 +84,7 @@ const LessonPage = () => {
 
   const handleExerciseClick = async (exercise: LessonExercise) => {
     if (completedExercises.has(exercise._id)) {
-      setFeedbackMessage("Այս հարցն արդեն ճիշտ եք պատասխանել!");
+      setFeedbackMessage("Այս հարցին արդեն ճիշտ եք պատասխանել:"); //does not work
       return;
     }
 
@@ -96,13 +97,11 @@ const LessonPage = () => {
     if (exercise.correct === "1") {
       const newPoints = points + parseInt(exercise.point);
       setPoints(newPoints);
-      setFeedbackMessage("Ճիշտ է!");
+      setFeedbackMessage("Ճիշտ է:");
       setCorrectAnswerClicked(true);
 
-      // Mark the exercise as completed
       completedExercises.add(exercise._id);
 
-      // Update user experience in MongoDB
       try {
         await axios.put("/api/user", {
           userId: user?.id,
@@ -111,9 +110,10 @@ const LessonPage = () => {
       } catch (error) {
         console.error("Error updating user experience:", error);
       }
-    } else {
-      setFeedbackMessage("Սխալ է. Փորձեք նորից!");
-      setHearts((prevHearts) => Math.max(0, prevHearts - 1));
+    } else if(hearts == 0) router.push("/shop");
+      else {
+      setFeedbackMessage("Սխալ է. Փորձեք նորից:");
+      setHearts((prevHearts) => Math.max(0, prevHearts - 1));      
     }
   };
 
@@ -122,15 +122,14 @@ const LessonPage = () => {
     setSelectedExercise(null);
     setCorrectAnswerClicked(false);
     setFeedbackMessage(null);
-    router.push("/listening");
+    router.push("/learn");
   };
 
   const handleBack = () => {
     router.push("/learn");
   };
 
-  // Handle loading and error states
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <Loading/>;
   if (!userData) return <div>No user data available</div>;
 
   return (
@@ -139,69 +138,57 @@ const LessonPage = () => {
         <Header title="Lesson Page" />
         <div className="space-y-4" />
 
-        {/* Back Button */}
         <div className="text-left mb-4">
-          <Button onClick={handleBack} size="lg" className="rounded-full">
+          
+          <Button onClick={handleBack} size="lg" className="rounded-full" variant={"ghost"}>
+            <img src="back.svg" alt="Back" className="w-4 h-4 mr-2" />
             Back to Learn
           </Button>
         </div>
 
-        {/* Lesson Units Section */}
         <div>
           {lessonUnits.map((unit) => (
-            <div key={unit._id} className="my-4 p-4 bg-white shadow-lg rounded-md border border-gray-200">
+            <div key={unit._id} className="my-4 p-4 text-customDark">
               <h3 className="text-xl font-semibold">{unit.title}</h3>
-              <p className="text-gray-600">{unit.question}</p>
+              <p className="text-customShade">{unit.question}</p>
             </div>
           ))}
         </div>
 
-        {/* Lesson Exercises Section */}
         <div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-6">
             {lessonExercises.map((exercise) => (
               <div
                 key={exercise._id}
-                className={`relative group flex flex-col items-center justify-center bg-white shadow-xl rounded-lg overflow-hidden transform transition-all duration-300 ease-in-out ${
-                  answered
-                    ? exercise.correct === "1"
-                      ? "bg-green-500"
-                      : "bg-red-500"
-                    : "bg-gray-300"
-                }`}
+                className={`relative group flex flex-col items-center justify-center rounded-lg overflow-hidden transform transition-all duration-300 ease-in-out`}
               >
-                <div className="absolute top-0 left-0 right-0 p-4 bg-opacity-70 bg-black text-white text-lg font-semibold text-center">
+                <div className="absolute top-0 left-0 right-0 p-4 bg-opacity-70 bg-customDark text-custom text-lg font-semibold text-center">
                   {exercise.name}
                 </div>
                 <button
                   onClick={() => handleExerciseClick(exercise)}
-                  className="w-full h-48 flex items-center justify-center bg-cover bg-center hover:scale-105 transition-all duration-300"
-                  style={{ backgroundImage: `url(${exercise.picture})` }}
+                  className="w-full h-48 flex items-center justify-center bg-cover bg-center"
+                  style={{ backgroundImage: `url(${exercise.picture})`, backgroundSize: "70%", backgroundPosition: "center", backgroundRepeat: "no-repeat", }}
+                  disabled={correctAnswerClicked}
                 >
-                  <div className="absolute inset-0 bg-black opacity-30 group-hover:opacity-40 transition-opacity"></div>
+                  <div className="absolute inset-0 bg-customDark opacity-10 group-hover:opacity-40 transition-opacity"></div>
                 </button>
               </div>
             ))}
           </div>
 
-          {/* Feedback Message */}
           {feedbackMessage && (
             <div className="mt-4 text-center text-xl font-semibold">
-              <p className={feedbackMessage === "Ճիշտ է!" ? "text-green-500" : "text-red-500"}>
+              <p className="text-customDark">
                 {feedbackMessage}
               </p>
             </div>
           )}
 
-          {/* Continue Button */}
+
           {answered && correctAnswerClicked && (
             <div className="mt-6 text-center">
-              <button
-                onClick={handleContinue}
-                className="py-3 px-8 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-all duration-200"
-              >
-                Continue
-              </button>
+              <Button variant="primary" onClick={handleContinue}> Continue </Button>
             </div>
           )}
         </div>

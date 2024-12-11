@@ -8,28 +8,27 @@ import { FeedWrapper } from "@/components/feed-wrapper";
 import { Header } from "../header";
 import { UserProgress } from "@/components/user-progress";
 import { StickyWrapper } from "@/components/sticky-wrapper";
+import Loading from "../loading";
 
 interface SpeakingExercise {
   _id: string;
   title: string;
   content: string;
-  point: string; // Not needed, but keeping for existing structure
+  point: string; 
 }
 
 const SpeakingPage = () => {
-  const { user } = useClerk(); // Get the current user from Clerk
+  const { user } = useClerk();
   const router = useRouter();
 
-  // States
   const [speakingExercises, setSpeakingExercises] = useState<SpeakingExercise[]>([]);
   const [loading, setLoading] = useState(true);
-  const [hearts, setHearts] = useState(5);
-  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [hearts] = useState(5);
+  const [hasActiveSubscription] = useState(false);
   const [recording, setRecording] = useState<MediaRecorder | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
 
   useEffect(() => {
-    // Fetch speaking exercises
     const fetchSpeakingExercises = async () => {
       try {
         const response = await axios.get("/api/speaking");
@@ -48,14 +47,13 @@ const SpeakingPage = () => {
     fetchSpeakingExercises();
   }, [user]);
 
-  // Start Recording
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
 
       mediaRecorder.ondataavailable = (event) => {
-        setAudioBlob(event.data); // Save the recorded audio blob
+        setAudioBlob(event.data); 
       };
 
       mediaRecorder.start();
@@ -65,7 +63,6 @@ const SpeakingPage = () => {
     }
   };
 
-  // Stop Recording
   const stopRecording = () => {
     if (recording) {
       recording.stop();
@@ -73,11 +70,9 @@ const SpeakingPage = () => {
     }
   };
 
-  // Upload Audio
   const uploadRecording = async (exerciseId: string) => {
     if (!audioBlob || !user?.id) return;
 
-    // Step 1: Upload audio to Azure Blob Storage
     const formData = new FormData();
     const audioFile = new File([audioBlob], `exercise_${exerciseId}_${Date.now()}.webm`, {
       type: "audio/webm",
@@ -91,7 +86,7 @@ const SpeakingPage = () => {
         {
           headers: {
             "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${process.env.AZURE_SAS_TOKEN}`, // Use your SAS token
+            Authorization: `Bearer ${process.env.AZURE_SAS_TOKEN}`,
           },
         }
       );
@@ -99,11 +94,10 @@ const SpeakingPage = () => {
       if (azureResponse.status === 201) {
         console.log("Audio uploaded to Azure successfully");
 
-        // Step 2: Save metadata to MongoDB
         await axios.post("/api/speaking", {
           userId: user.id,
           exerciseId,
-          audioUrl: azureResponse.data.url, // Assuming Azure returns the URL of the uploaded file
+          audioUrl: azureResponse.data.url,
         });
 
         alert("Recording uploaded successfully!");
@@ -116,8 +110,7 @@ const SpeakingPage = () => {
     }
   };
 
-  // Handle loading and error states
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <Loading/>;
 
   return (
     <div className="flex gap-[48px] px-6">
@@ -128,7 +121,7 @@ const SpeakingPage = () => {
           {speakingExercises.map((exercise) => (
             <div
               key={exercise._id}
-              className="p-6 bg-white shadow-md rounded-md border border-gray-200"
+              className="p-6 rounded-md"
             >
               <h3 className="font-semibold">{exercise.title}</h3>
               <p className="mt-2 text-gray-700">{exercise.content}</p>
@@ -137,14 +130,14 @@ const SpeakingPage = () => {
                 {recording ? (
                   <button
                     onClick={stopRecording}
-                    className="py-2 px-6 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-200"
+                    className="py-2 px-6 bg-red-500 text-custom rounded-lg hover:bg-red-600 transition-all duration-200"
                   >
                     Stop Recording
                   </button>
                 ) : (
                   <button
                     onClick={startRecording}
-                    className="py-2 px-6 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-200"
+                    className="py-2 px-6 bg-gray-400 text-custom rounded-lg hover:bg-gray-400/90 transition-all duration-200"
                   >
                     Start Recording
                   </button>
@@ -152,7 +145,7 @@ const SpeakingPage = () => {
 
                 <button
                   onClick={() => uploadRecording(exercise._id)}
-                  className="py-2 px-6 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-200"
+                  className="py-2 px-6 bg-orange-400 text-custom rounded-lg hover:bg-orange-400/90 transition-all duration-200"
                   disabled={!audioBlob}
                 >
                   Upload Recording
@@ -165,9 +158,9 @@ const SpeakingPage = () => {
 
       <StickyWrapper>
         <UserProgress
-          hearts={hearts} // Pass hearts from state
-          points={0} // Points are not relevant for recording
-          hasActiveSubscription={hasActiveSubscription} // Pass subscription status from state
+          hearts={hearts} 
+          points={0} 
+          hasActiveSubscription={hasActiveSubscription} 
         />
       </StickyWrapper>
     </div>

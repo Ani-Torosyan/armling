@@ -18,7 +18,6 @@ export async function GET() {
         const database = client.db("ArmLing");
     
 
-        // Fetch data from LessonExercise
         const ListeningExerciseCollection = database.collection("ListeningExercise");
         const ListeningExercise= await ListeningExerciseCollection.find({}).toArray();
 

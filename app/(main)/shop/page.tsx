@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useClerk } from "@clerk/nextjs"; // To get the current user's clerkId
+import { useClerk } from "@clerk/nextjs"; 
 import { StickyWrapper } from "@/components/sticky-wrapper";
 import { FeedWrapper } from "@/components/feed-wrapper";
 import { UserProgress } from "@/components/user-progress";
 import { Header } from "../header";
+import { Items } from "./items";
+import Loading from "../loading";
 
 type User = {
     userName: string;
@@ -14,65 +16,72 @@ type User = {
     firstName: string;
     lastName: string;
     userHearts: number;
-    lastHeartUpdate: string; // Add the lastHeartUpdate field
+    lastHeartUpdate: string;
 };
 
 const ShopPage = () => {
-    const { user } = useClerk(); // Get the current user from Clerk
-    const [userData, setUserData] = useState<User | null>(null); // Store user data here
-    const [loading, setLoading] = useState(true); // For loading state
-    const [timeUntilRefill, setTimeUntilRefill] = useState<string>("");
+    const { user } = useClerk();
+    const [userData, setUserData] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [time, setTime] = useState<number>(0);
 
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                if (!user?.id) return; // If there's no user, stop fetching
+                if (!user?.id) return;
                 const response = await fetch(`/api/user?userId=${user.id}`);
                 if (response.ok) {
                     const data = await response.json();
-                    setUserData(data); // Set user data in state
+                    setUserData(data);
                 } else {
                     console.error("Error fetching user data");
                 }
             } catch (error) {
                 console.error("Error fetching user data:", error);
             } finally {
-                setLoading(false); // Stop loading when data is fetched
+                setLoading(false);
             }
         };
 
         if (user) {
-            fetchUserData(); // Call the function to fetch user data
+            fetchUserData();
         }
-    }, [user]); // Re-run the effect when `user` changes
+    }, [user]);
 
+    //Problems below
     useEffect(() => {
-        // Calculate time until the next refill
         if (userData && userData.lastHeartUpdate) {
-            const lastHeartUpdate = new Date(userData.lastHeartUpdate);
-            const now = new Date();
-            const refillTime = new Date(lastHeartUpdate.getTime() + 5 * 60 * 1000); // Add 5 minutes for the next refill
-            const timeDiff = refillTime.getTime() - now.getTime();
+            const updateTimer = () => {
+                const now = Date.now();
+                const lastUpdate = new Date(userData.lastHeartUpdate).getTime();
+                const timeElapsed = Math.floor((now - lastUpdate) / 1000);
+                const heartsToAdd = Math.floor(timeElapsed / 300);
 
-            if (timeDiff > 0) {
-                const minutes = Math.floor(timeDiff / 60000);
-                const seconds = Math.floor((timeDiff % 60000) / 1000);
-                setTimeUntilRefill(`${minutes}m ${seconds}s`);
-            } else if (userData.userHearts == 5) {
-                setTimeUntilRefill("You have full hearts!");
-            } 
-            else {
-                setTimeUntilRefill("Ready for refill!");
-            }
+                if (heartsToAdd > 0 && userData.userHearts < 5) {
+                    const newHearts = Math.min(userData.userHearts + heartsToAdd, 5);
+                    setUserData((prev) => prev && { ...prev, userHearts: newHearts });
+
+                    const newLastUpdate = new Date(lastUpdate + heartsToAdd * 300 * 1000);
+                    setUserData((prev) =>
+                        prev && { ...prev, lastHeartUpdate: newLastUpdate.toISOString() }
+                    );
+                }
+
+                const nextRefillTime = 300 - (timeElapsed % 300);
+                setTime(nextRefillTime);
+            };
+
+            updateTimer();
+
+            const timer = setInterval(updateTimer, 1000);
+            return () => clearInterval(timer);
         }
-    }, [userData]); // Recalculate when user data changes
+    }, [userData]);
 
-    if (loading) {
-        return <div>Loading...</div>; // Loading state while fetching
-    }
+    if (loading) return <Loading/>
 
     if (!userData) {
-        return <div>No user data available</div>; // Handle case if there's no user data
+        return <div>No user data available</div>;
     }
 
     return (
@@ -85,13 +94,9 @@ const ShopPage = () => {
                 />
             </StickyWrapper>
             <FeedWrapper>
-                <div>
-                    <Header title="Shop" />
-                    <div className="space-y-4">
-                        <p>
-                            Time until next heart refill: {timeUntilRefill}
-                        </p>
-                    </div>
+                <Header title="Shop" />
+                <div className="w-full flex flex-col items-center">
+                    <Items hearts={userData.userHearts} time={time} sub={false} />
                 </div>
             </FeedWrapper>
         </div>
@@ -99,3 +104,5 @@ const ShopPage = () => {
 };
 
 export default ShopPage;
+
+
