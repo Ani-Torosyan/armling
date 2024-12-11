@@ -11,7 +11,6 @@ import { StickyWrapper } from "@/components/sticky-wrapper";
 import { Button } from "@/components/ui/button";
 import { Promo } from "@/components/promo";
 import Loading from "../loading";
-import { Ghost } from "lucide-react";
 
 interface LessonUnit {
   _id: string;
@@ -36,7 +35,6 @@ const LessonPage = () => {
 
   const [lessonUnits, setLessonUnits] = useState<LessonUnit[]>([]);
   const [lessonExercises, setLessonExercises] = useState<LessonExercise[]>([]);
-  const [selectedExercise, setSelectedExercise] = useState<LessonExercise | null>(null);
   const [answered, setAnswered] = useState(false);
   const [correctAnswerClicked, setCorrectAnswerClicked] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
@@ -91,7 +89,6 @@ const LessonPage = () => {
     const audio = new Audio(exercise.audio);
     audio.play();
 
-    setSelectedExercise(exercise);
     setAnswered(true);
 
     if (exercise.correct === "1") {
@@ -119,7 +116,6 @@ const LessonPage = () => {
 
   const handleContinue = () => {
     setAnswered(false);
-    setSelectedExercise(null);
     setCorrectAnswerClicked(false);
     setFeedbackMessage(null);
     router.push("/learn");

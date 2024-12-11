@@ -33,7 +33,6 @@ const ListeningPage = () => {
   const [answerStatus, setAnswerStatus] = useState<"correct" | "incorrect" | null>(null);
   const [score, setScore] = useState(0);
   const [hearts, setHearts] = useState(5);
-  const [userData, setUserData] = useState<{ userHearts: number; userExp: number } | null>(null);
   const [hasAnsweredCorrectly, setHasAnsweredCorrectly] = useState(false);
 
   useEffect(() => {
@@ -59,7 +58,6 @@ const ListeningPage = () => {
         const response = await fetch(`/api/user?userId=${user.id}`);
         if (response.ok) {
           const data = await response.json();
-          setUserData(data);
           setHearts(data.userHearts || 5); 
           setScore(data.userExp || 0); 
         } else {

@@ -9,6 +9,7 @@ import { Header } from "../header";
 import { UserProgress } from "@/components/user-progress";
 import { StickyWrapper } from "@/components/sticky-wrapper";
 import Loading from "../loading";
+import { Button } from "@/components/ui/button";
 
 interface SpeakingExercise {
   _id: string;
@@ -70,6 +71,10 @@ const SpeakingPage = () => {
     }
   };
 
+  const handleBack = () => {
+    router.push("/learn");
+  };
+
   const uploadRecording = async (exerciseId: string) => {
     if (!audioBlob || !user?.id) return;
 
@@ -118,6 +123,14 @@ const SpeakingPage = () => {
         <Header title="Speaking Exercises" />
 
         <div className="space-y-6">
+
+          <div className="text-left mb-4">
+            <Button onClick={handleBack} size="lg" className="rounded-full" variant={"ghost"}>
+              <img src="back.svg" alt="Back" className="w-4 h-4 mr-2" />
+              Back to Learn
+            </Button>
+          </div>
+
           {speakingExercises.map((exercise) => (
             <div
               key={exercise._id}
