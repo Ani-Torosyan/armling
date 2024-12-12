@@ -17,9 +17,12 @@ export const Items = ({ hearts, time, sub }: Props) => {
 
   useEffect(() => {
     if (time === 0) {
-      axios.post('https://armling.vercel.app/api/heart-refill')
-        .then(response => {
-          console.log('Heart refill successful:', response.data);
+      fetch('https://armling.vercel.app/api/heart-refill', {
+        method: 'POST',
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Heart refill successful:', data);
         })
         .catch(error => {
           console.error('Error refilling hearts:', error);
