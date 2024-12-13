@@ -6,8 +6,6 @@ import { useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { FeedWrapper } from "@/components/feed-wrapper";
 import { Header } from "../header";
-import { UserProgress } from "@/components/user-progress";
-import { StickyWrapper } from "@/components/sticky-wrapper";
 import Loading from "../loading";
 import { Button } from "@/components/ui/button";
 
