@@ -24,8 +24,6 @@ const SpeakingPage = () => {
 
   const [speakingExercises, setSpeakingExercises] = useState<SpeakingExercise[]>([]);
   const [loading, setLoading] = useState(true);
-  const [hearts] = useState(5);
-  const [hasActiveSubscription] = useState(false);
   const [recording, setRecording] = useState<MediaRecorder | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
 
@@ -168,14 +166,6 @@ const SpeakingPage = () => {
           ))}
         </div>
       </FeedWrapper>
-
-      <StickyWrapper>
-        <UserProgress
-          hearts={hearts} 
-          points={0} 
-          hasActiveSubscription={hasActiveSubscription} 
-        />
-      </StickyWrapper>
     </div>
   );
 };

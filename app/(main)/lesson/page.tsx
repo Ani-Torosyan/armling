@@ -40,7 +40,7 @@ const LessonPage = () => {
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [hearts, setHearts] = useState(5);
   const [points, setPoints] = useState(0);
-  const [userData, setUserData] = useState<{ userHearts: number; userExp: number } | null>(null);
+  const [userData, setUserData] = useState<{ userHearts: number; userExp: number; subscription: boolean} | null>(null);
   const [loading, setLoading] = useState(true);
 
   const completedExercises = new Set<string>(); 
@@ -82,7 +82,7 @@ const LessonPage = () => {
 
   const handleExerciseClick = async (exercise: LessonExercise) => {
     if (completedExercises.has(exercise._id)) {
-      setFeedbackMessage("Այս հարցին արդեն ճիշտ եք պատասխանել:"); //does not work
+      setFeedbackMessage("Այս հարցին արդեն ճիշտ եք պատասխանել:"); //TODO does not work
       return;
     }
 
@@ -107,8 +107,8 @@ const LessonPage = () => {
       } catch (error) {
         console.error("Error updating user experience:", error);
       }
-    } else if(hearts == 0) router.push("/shop");
-      else {
+    } else if(hearts == 0 && userData?.subscription === false) router.push("/shop");
+      else if(userData?.subscription === false) {
       setFeedbackMessage("Սխալ է. Փորձեք նորից:");
       setHearts((prevHearts) => Math.max(0, prevHearts - 1));      
     }
@@ -191,8 +191,8 @@ const LessonPage = () => {
       </FeedWrapper>
 
       <StickyWrapper>
-        <UserProgress hearts={hearts} points={points} hasActiveSubscription={false} />
-        <Promo />
+        <UserProgress hearts={hearts} points={points} hasActiveSubscription={userData.subscription} />
+        {userData.subscription === false && <Promo />}
       </StickyWrapper>
     </div>
   );

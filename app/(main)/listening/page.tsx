@@ -10,6 +10,7 @@ import { UserProgress } from "@/components/user-progress";
 import { StickyWrapper } from "@/components/sticky-wrapper";
 import { Button } from "@/components/ui/button";
 import Loading from "../loading";
+import { Promo } from "@/components/promo";
 
 interface ListeningExercise {
   _id: string;
@@ -33,6 +34,7 @@ const ListeningPage = () => {
   const [answerStatus, setAnswerStatus] = useState<"correct" | "incorrect" | null>(null);
   const [score, setScore] = useState(0);
   const [hearts, setHearts] = useState(5);
+  const [sub, setSub] = useState(false);
   const [hasAnsweredCorrectly, setHasAnsweredCorrectly] = useState(false);
 
   useEffect(() => {
@@ -60,6 +62,7 @@ const ListeningPage = () => {
           const data = await response.json();
           setHearts(data.userHearts || 5); 
           setScore(data.userExp || 0); 
+          setSub(data.subscription || false)
         } else {
           console.error("Error fetching user data");
         }
@@ -177,7 +180,8 @@ const ListeningPage = () => {
       </FeedWrapper>
 
       <StickyWrapper>
-        <UserProgress hearts={hearts} points={score} hasActiveSubscription={false} />
+        <UserProgress hearts={hearts} points={score} hasActiveSubscription={sub} />
+        {sub === false && <Promo />}
       </StickyWrapper>
     </div>
   );

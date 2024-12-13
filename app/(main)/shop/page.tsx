@@ -17,6 +17,7 @@ type User = {
     lastName: string;
     userHearts: number;
     lastHeartUpdate: string;
+    subscription: boolean;
 };
 
 const ShopPage = () => {
@@ -47,36 +48,28 @@ const ShopPage = () => {
             fetchUserData();
         }
     }, [user]);
+    
 
-    //Problems below
+    //TODO write in DB
     useEffect(() => {
-        if (userData && userData.lastHeartUpdate) {
+        if (userData && userData.userHearts < 5) {
             const updateTimer = () => {
                 const now = Date.now();
                 const lastUpdate = new Date(userData.lastHeartUpdate).getTime();
                 const timeElapsed = Math.floor((now - lastUpdate) / 1000);
-                const heartsToAdd = Math.floor(timeElapsed / 300);
-
-                if (heartsToAdd > 0 && userData.userHearts < 5) {
-                    const newHearts = Math.min(userData.userHearts + heartsToAdd, 5);
-                    setUserData((prev) => prev && { ...prev, userHearts: newHearts });
-
-                    const newLastUpdate = new Date(lastUpdate + heartsToAdd * 300 * 1000);
-                    setUserData((prev) =>
-                        prev && { ...prev, lastHeartUpdate: newLastUpdate.toISOString() }
-                    );
-                }
-
+    
                 const nextRefillTime = 300 - (timeElapsed % 300);
                 setTime(nextRefillTime);
             };
-
+    
             updateTimer();
-
+    
             const timer = setInterval(updateTimer, 1000);
+    
             return () => clearInterval(timer);
         }
     }, [userData]);
+    
 
     if (loading) return <Loading/>
 
@@ -90,15 +83,15 @@ const ShopPage = () => {
                 <UserProgress
                     hearts={userData.userHearts}
                     points={userData.userExp}
-                    hasActiveSubscription={false}
+                    hasActiveSubscription={userData.subscription}
                 />
             </StickyWrapper>
             <FeedWrapper>
                 <Header title="Shop" />
                 <div className="w-full flex flex-col items-center">
-                    <Items hearts={userData.userHearts} time={time} sub={false} />
+                    <Items hearts={userData.userHearts} time={time} sub={userData.subscription} />
                 </div>
-            </FeedWrapper>
+            </FeedWrapper> 
         </div>
     );
 };

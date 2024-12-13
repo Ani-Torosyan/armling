@@ -13,7 +13,6 @@ const userSchema = new mongoose.Schema({
   speaking: { type: [String], default: [] },
   writing: { type: [String], default: [] },
   lesson: { type: [String], default: [] },
-  lastHeartUpdate: { type: Date, default: new Date() },
   subscription: { type: Boolean, default: false },
 });
 
