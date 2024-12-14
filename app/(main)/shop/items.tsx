@@ -6,11 +6,10 @@ import { useState } from "react";
 
 type Props = {
     hearts: number;
-    time: number;
     sub: boolean;
 };
 
-export const Items = ({ hearts, time, sub }: Props) => {
+export const Items = ({ hearts, sub }: Props) => {
     const [isSubscribed, setIsSubscribed] = useState(sub);
 
     return (
@@ -22,12 +21,9 @@ export const Items = ({ hearts, time, sub }: Props) => {
                         Refill hearts
                     </p>
                 </div>
-                <Button variant="ghost" disabled={hearts === 5 || time > 0}>
+                <Button variant="ghost" disabled={hearts === 5}>
                     {hearts === 5 ? "full" : (
-                        <p>
-                            {`${Math.floor(time / 60)}`.padStart(2, "0")}:
-                            {`${time % 60}`.padStart(2, "0")}
-                        </p>
+                        <p>Refilling in process...</p>
                     )}
                 </Button>
             </div>
@@ -40,7 +36,7 @@ export const Items = ({ hearts, time, sub }: Props) => {
                 </div>
                 <Button disabled={isSubscribed} onClick={() => {
                     window.location.href = "https://buy.stripe.com/test_4gw7vYdPn7001a0000";
-                    setIsSubscribed(true);
+                    setIsSubscribed(true); //TODO update the db: update-sub
                 }}>
                     {isSubscribed ? "active" : "upgrade"}
                 </Button>

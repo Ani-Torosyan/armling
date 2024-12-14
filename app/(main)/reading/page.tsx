@@ -10,6 +10,7 @@ import { UserProgress } from "@/components/user-progress";
 import { StickyWrapper } from "@/components/sticky-wrapper";
 import { Button } from "@/components/ui/button";
 import Loading from "../loading";
+import { Promo } from "@/components/promo";
 
 interface Question {
   question: string;
@@ -35,7 +36,7 @@ type User = {
   firstName: string;
   lastName: string;
   userHearts: number;
-  lastHeartUpdate: string;
+  sub: boolean;
 };
 
 const ReadingPage = () => {
@@ -44,17 +45,17 @@ const ReadingPage = () => {
 
   const [exercise, setExercise] = useState<ReadingExercise | null>(null);
   const [loading, setLoading] = useState(true);
-  const [userAnswers, setUserAnswers] = useState<(number | null)[]>([]); // Store answers for each question
-  const [answerStatuses, setAnswerStatuses] = useState<("correct" | "incorrect" | null)[]>([]); // Store answer status for each question
+  const [userAnswers, setUserAnswers] = useState<(number | null)[]>([]);
+  const [answerStatuses, setAnswerStatuses] = useState<("correct" | "incorrect" | null)[]>([]);
   const [score, setScore] = useState(0);
   const [userData, setUserData] = useState<User | null>(null);
-  const [submitted, setSubmitted] = useState(false); // Track if answers are submitted
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     const fetchExercise = async () => {
       try {
         const response = await axios.get("/api/reading");
-        setExercise(response.data[0]); // Assuming response.data is an array
+        setExercise(response.data[0]);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching exercise:", error);
@@ -91,7 +92,6 @@ const ReadingPage = () => {
   const handleAnswerSubmit = (index: number, optionIndex: number) => {
     if (!exercise) return;
 
-    // Mark that the user has selected an answer for this question
     setUserAnswers((prevAnswers) => {
       const newAnswers = [...prevAnswers];
       newAnswers[index] = optionIndex;
@@ -104,12 +104,8 @@ const ReadingPage = () => {
 
     let calculatedScore = 0;
 
-    // Check all answers and set feedback statuses
     const updatedAnswerStatuses = exercise.questions.map((q, index) => {
-      // Normalize both the user answer and the correct answer to lowercase and trim spaces
       const correctAnswer = q.correctAnswer.trim().toLowerCase();
-
-      // Make sure userAnswers[index] is valid before attempting to access q.options
       const userAnswer = userAnswers[index] !== null && userAnswers[index] >= 0
         ? q.options[userAnswers[index]].trim().toLowerCase()
         : "";
@@ -127,7 +123,6 @@ const ReadingPage = () => {
     setScore(calculatedScore);
     setSubmitted(true);
 
-    // Update score in the backend
     try {
       axios.put("/api/user", {
         userId: user?.id,
@@ -138,15 +133,23 @@ const ReadingPage = () => {
     }
   };
 
-  const handleBackToLearn = () => {
-    router.push("/learn"); // Replace with the correct path to the learning page
+  const handleTryAgain = () => {
+    setUserAnswers((prevAnswers) =>
+      prevAnswers.map((answer, index) =>
+        answerStatuses[index] === "incorrect" ? null : answer
+      )
+    );
+    setAnswerStatuses((prevStatuses) =>
+      prevStatuses.map((status) => (status === "incorrect" ? null : status))
+    );
+    setSubmitted(false);
   };
 
-  if (loading) return <Loading />;
+  const handleBackToLearn = () => {
+    router.push("/learn");
+  };
 
-  if (!exercise) {
-    return <div>No exercise found</div>;
-  }
+  if (loading || !exercise) return <Loading />;
 
   if (!userData) {
     return <div>No user data available</div>;
@@ -158,65 +161,90 @@ const ReadingPage = () => {
         <UserProgress
           hearts={userData.userHearts}
           points={userData.userExp}
-          hasActiveSubscription={false}
+          hasActiveSubscription={userData.sub}
         />
+        {userData.sub === false && <Promo />}
       </StickyWrapper>
       <FeedWrapper>
         <Header title="Reading Exercise" />
+        <div className="text-left mb-4">
+          <Button onClick={handleBackToLearn} size="lg" className="rounded-full" variant={"ghost"}>
+            <img src="back.svg" alt="Back" className="w-4 h-4 mr-2" />
+            Back to Learn
+          </Button>
+        </div>
+        <div className="text-xl mb-4 text-justify"> {exercise.passage} </div>
         <div className="w-full flex flex-col items-center">
-          <h1>{exercise.task}</h1>
-          <p>{exercise.passage}</p>
-          {exercise.questions && exercise.questions.map((q, index) => (
+          <h3 className="font-medium mb-4">{exercise.task}</h3>
+          {exercise.questions.map((q, index) => (
             <div key={index} className="my-4">
-              <p>{q.question}</p>
-              {q.options.map((option, i) => (
-                <Button
-                  key={i}
-                  onClick={() => handleAnswerSubmit(index, i)}
-                  className={`${
-                    userAnswers[index] === i
-                      ? "bg-blue-500" // Blue color when the answer is selected
-                      : "bg-gray-200"
-                  } ${
-                    submitted
-                      ? answerStatuses[index] !== null && userAnswers[index] === i
-                        ? answerStatuses[index] === "correct"
-                          ? "bg-green-500" // Green for correct selected answer
-                          : "bg-red-500"  // Red for incorrect selected answer
+              <p className="text-center mb-2">{q.question}</p>
+              <div className="flex justify-center items-center space-x-4">
+                {q.options.map((option, i) => (
+                  <Button
+                    variant={userAnswers[index] === i || submitted ? "secondary" : "default"}
+                    key={i}
+                    onClick={() => handleAnswerSubmit(index, i)}
+                    className={`${
+                      submitted
+                        ? answerStatuses[index] !== null && userAnswers[index] === i
+                          ? answerStatuses[index] === "correct"
+                            ? "bg-green-500"
+                            : "bg-red-500"
+                          : ""
                         : ""
-                      : ""
-                  }`}
-                  disabled={submitted} // Disable button after submission
-                  style={{
-                    opacity: submitted ? 1 : 0.8, // Maintain opacity for disabled buttons but ensure visibility
-                    pointerEvents: submitted ? 'none' : 'auto', // Ensure no interaction after submission
-                  }}
-                >
-                  {option}
-                </Button>
-              ))}
+                    }`}
+                    disabled={submitted}
+                  >
+                    {option}
+                  </Button>
+                ))}
+              </div>
               {submitted && userAnswers[index] !== null && (
                 <p
-                  className={`mt-2 ${
+                  className={`mt-2 flex justify-center ${
                     answerStatuses[index] === "correct"
                       ? "text-green-500"
                       : "text-red-500"
                   }`}
                 >
-                  {answerStatuses[index] === "correct" ? "Correct!" : "Incorrect. Try again!"}
+                  {answerStatuses[index] === "correct" ? "Correct!" : "Incorrect. Try Again."}
                 </p>
               )}
+
+              <div className="flex justify-center">
+              {submitted &&
+                  userAnswers[index] !== null &&
+                  index === answerStatuses.lastIndexOf("incorrect") && (
+                    <div className="flex justify-center">
+                      <Button variant={"secondary"} onClick={handleTryAgain}>
+                        Try Again
+                      </Button>
+                    </div>
+                  )}
+              </div>
+
+              <div className="flex justify-center">
+                {submitted &&
+                  userAnswers[index] !== null &&
+                  answerStatuses[index] === "correct" &&
+                  index === answerStatuses.length - 1 && (
+                    <div className="flex justify-center">
+                      <Button variant={"primary"} onClick={handleBackToLearn}>
+                        Continue
+                      </Button>
+                    </div>
+                  )}
+              </div>
             </div>
           ))}
           <div className="mt-6 flex flex-col items-center w-full">
             {!submitted && (
-              <Button onClick={handleSubmitAllAnswers}>Submit Answers</Button>
+              <Button variant={"primary"} onClick={handleSubmitAllAnswers}>
+                Submit
+              </Button>
             )}
-            {submitted && (
-              <div className="flex justify-end w-full mt-4">
-                <Button onClick={handleBackToLearn}>Back to Learn</Button>
-              </div>
-            )}
+            
           </div>
         </div>
       </FeedWrapper>
@@ -225,3 +253,4 @@ const ReadingPage = () => {
 };
 
 export default ReadingPage;
+

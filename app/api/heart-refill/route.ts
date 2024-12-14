@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { heartRefillJob } from '@/jobs/heartRefillJob';
-
 export async function GET() {
   try {
     await heartRefillJob();

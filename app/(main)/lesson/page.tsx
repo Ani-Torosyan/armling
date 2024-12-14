@@ -145,7 +145,7 @@ const LessonPage = () => {
         <div>
           {lessonUnits.map((unit) => (
             <div key={unit._id} className="my-4 p-4 text-customDark">
-              <h3 className="text-xl font-semibold">{unit.title}</h3>
+              <h3 className="text-xl">{unit.title}</h3>
               <p className="text-customShade">{unit.question}</p>
             </div>
           ))}

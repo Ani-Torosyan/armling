@@ -132,33 +132,33 @@ const SpeakingPage = () => {
               key={exercise._id}
               className="p-6 rounded-md"
             >
-              <h3 className="font-semibold">{exercise.title}</h3>
-              <p className="mt-2 text-gray-700">{exercise.content}</p>
+              <h3 className="font-semibold flex justify-center text-customDark">{exercise.title}</h3>
+              <p className="mt-2 text-customShade flex justify-center">{exercise.content}</p>
 
-              <div className="mt-4 space-x-4">
+              <div className="mt-4 space-x-4 flex justify-center">
                 {recording ? (
-                  <button
+                  <Button
                     onClick={stopRecording}
-                    className="py-2 px-6 bg-red-500 text-custom rounded-lg hover:bg-red-600 transition-all duration-200"
+                    variant="danger"
                   >
                     Stop Recording
-                  </button>
+                  </Button>
                 ) : (
-                  <button
+                  <Button
                     onClick={startRecording}
-                    className="py-2 px-6 bg-gray-400 text-custom rounded-lg hover:bg-gray-400/90 transition-all duration-200"
+                    variant={"secondary"}
                   >
                     Start Recording
-                  </button>
+                  </Button>
                 )}
 
-                <button
+                <Button
                   onClick={() => uploadRecording(exercise._id)}
-                  className="py-2 px-6 bg-orange-400 text-custom rounded-lg hover:bg-orange-400/90 transition-all duration-200"
+                  variant={"primary"}
                   disabled={!audioBlob}
                 >
                   Upload Recording
-                </button>
+                </Button>
               </div>
             </div>
           ))}

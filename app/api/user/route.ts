@@ -26,6 +26,7 @@ export async function GET(request: Request) {
             firstName: user.firstName,
             lastName: user.lastName,
             userHearts: user.userHearts,
+            lastHeartUpdate: user.lastHeartUpdate,
             subscription: user.subscription,
         });
     } catch (error) {

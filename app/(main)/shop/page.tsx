@@ -24,7 +24,7 @@ const ShopPage = () => {
     const { user } = useClerk();
     const [userData, setUserData] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
-    const [time, setTime] = useState<number>(0);
+    //const [time, setTime] = useState<number>(0);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -50,8 +50,8 @@ const ShopPage = () => {
     }, [user]);
     
 
-    //TODO write in DB
-    useEffect(() => {
+    //TODO CHANGE THIS
+    /*useEffect(() => {
         if (userData && userData.userHearts < 5) {
             const updateTimer = () => {
                 const now = Date.now();
@@ -68,7 +68,7 @@ const ShopPage = () => {
     
             return () => clearInterval(timer);
         }
-    }, [userData]);
+    }, [userData]);*/
     
 
     if (loading) return <Loading/>
@@ -89,7 +89,7 @@ const ShopPage = () => {
             <FeedWrapper>
                 <Header title="Shop" />
                 <div className="w-full flex flex-col items-center">
-                    <Items hearts={userData.userHearts} time={time} sub={userData.subscription} />
+                    <Items hearts={userData.userHearts} sub={userData.subscription} />
                 </div>
             </FeedWrapper> 
         </div>

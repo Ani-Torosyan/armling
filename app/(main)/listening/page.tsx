@@ -126,7 +126,7 @@ const ListeningPage = () => {
         </div>
 
         <div className="my-4 p-4 rounded-md text-customDark">
-          <h2 className="text-xl font-semibold mb-4">{exercise.title}</h2>
+          <h2 className="text-xl mb-4">{exercise.title}</h2>
 
           <div className="mb-4">
             <iframe
@@ -140,23 +140,23 @@ const ListeningPage = () => {
           </div>
 
           <div className="text-customDark">
-            <h3 className="text-lg font-medium mb-4">{exercise.task}</h3>
-            <div className="space-y-4">
+            <h3 className="font-medium mb-4">{exercise.task}</h3>
+            <div className="flex justify-center gap-4">
               {exercise.question.map((option, index) => (
-                <button
+                <Button
                   key={index}
-                  className={`w-full p-4 text-left rounded-lg ${
+                  className={`${
                     userAnswer === index
                       ? answerStatus === "correct"
-                        ? "bg-green-500 text-custom"
-                        : "bg-red-500 text-custom"
+                        ? "bg-green-500 text-customDark"
+                        : "bg-red-500 text-customDark"
                       : "bg-custom"
-                  } hover:bg-customShade`}
+                  } hover:bg-customMid`}
                   onClick={() => handleAnswerSelect(index)}
                   disabled={hasAnsweredCorrectly}
                 >
                   {option}
-                </button>
+                </Button>
               ))}
             </div>
 
