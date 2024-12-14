@@ -62,7 +62,10 @@ export const Items = ({ hearts, time, sub }: Props) => {
                         Unlimited hearts
                     </p>
                 </div>
-                <Button disabled={isSubscribed} onClick={handleUpgrade}>
+                <Button disabled={isSubscribed} onClick={() => {
+                    window.location.href = "https://buy.stripe.com/test_4gw7vYdPn7001a0000";
+                    setIsSubscribed(true); //TODO update the db: update-sub
+                }}>
                     {isSubscribed ? "active" : "upgrade"}
                 </Button>
             </div>

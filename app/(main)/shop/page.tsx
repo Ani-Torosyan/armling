@@ -17,6 +17,7 @@ type User = {
     lastName: string;
     userHearts: number;
     lastHeartUpdate: string;
+    subscription: boolean;
 };
 
 const ShopPage = () => {
@@ -97,13 +98,13 @@ const ShopPage = () => {
                 <UserProgress
                     hearts={userData.userHearts}
                     points={userData.userExp}
-                    hasActiveSubscription={false}
+                    hasActiveSubscription={userData.subscription}
                 />
             </StickyWrapper>
             <FeedWrapper>
                 <Header title="Shop" />
                 <div className="w-full flex flex-col items-center">
-                    <Items hearts={userData.userHearts} time={time} sub={false} />
+                    <Items hearts={userData.userHearts} time={time} sub={userData.subscription} />
                 </div>
             </FeedWrapper>
         </div>
