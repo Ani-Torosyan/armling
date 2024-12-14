@@ -48,7 +48,7 @@ export const Items = ({ hearts, time, sub }: Props) => {
                     </p>
                 </div>
                 <Button variant="ghost" disabled={hearts === 5 || time > 0}>
-                    {hearts === 5 ? "full" : (
+                    {hearts === 5 || isSubscribed ? "full" : (
                         <p>
                             {`${Math.floor(time / 60)}`.padStart(2, "0")}:
                             {`${time % 60}`.padStart(2, "0")}
@@ -64,8 +64,7 @@ export const Items = ({ hearts, time, sub }: Props) => {
                     </p>
                 </div>
                 <Button disabled={isSubscribed} onClick={() => {
-                    window.location.href = "https://buy.stripe.com/test_4gw7vYdPn7001a0000";
-                    setIsSubscribed(true); //TODO update the db: update-sub
+                    handleUpgrade()
                 }}>
                     {isSubscribed ? "active" : "upgrade"}
                 </Button>
