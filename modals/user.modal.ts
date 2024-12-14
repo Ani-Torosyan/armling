@@ -8,17 +8,12 @@ const userSchema = new mongoose.Schema({
   lastName: { type: String },
   userHearts: { type: Number, default: 5, max: 5 },
   userExp: { type: Number, default: 0 },
-  reading: { type: [String],
-    default: [], },
-  listening: { type: [String],
-    default: [], },
-  speaking: { type: [String],
-    default: [], },
-  writing: { type: [String],
-    default: [], },
-    lesson: { type: [String],
-      default: [], },
-  lastHeartUpdate: { type: Date, default: new Date() }, 
+  reading: { type: [String], default: [] },
+  listening: { type: [String], default: [] },
+  speaking: { type: [String], default: [] },
+  writing: { type: [String], default: [] },
+  lesson: { type: [String], default: [] },
+  subscription: { type: Boolean, default: false },
 });
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);

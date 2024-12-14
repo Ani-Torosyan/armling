@@ -13,7 +13,7 @@ import Image from "next/image";
 
 const LearnPage = () => {
     const { user } = useClerk();
-    const [userData, setUserData] = useState<{ userHearts: number; userExp: number } | null>(null); 
+    const [userData, setUserData] = useState<{ userHearts: number; userExp: number; subscription: boolean } | null>(null); 
     const [unit] = useState<{ title: string } | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -24,6 +24,7 @@ const LearnPage = () => {
                 const response = await fetch(`/api/user?userId=${user.id}`);
                 if (response.ok) {
                     const data = await response.json();
+                    console.log(data); 
                     setUserData(data); 
                 } else {
                     console.error("Error fetching user data");
@@ -52,9 +53,9 @@ const LearnPage = () => {
                 <UserProgress
                     hearts={userData.userHearts}  
                     points={userData.userExp} 
-                    hasActiveSubscription={false}  
+                    hasActiveSubscription={userData.subscription}  
                 />
-                <Promo />
+                {userData.subscription === false && <Promo />}
             </StickyWrapper>
             <FeedWrapper>
                 <Header title="Home" />

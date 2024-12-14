@@ -1,123 +1,190 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useClerk } from "@clerk/nextjs";
+import axios from "axios"; 
+import { useClerk } from "@clerk/nextjs"; 
 import { useRouter } from "next/navigation";
 import { FeedWrapper } from "@/components/feed-wrapper";
 import { Header } from "../header";
 import { UserProgress } from "@/components/user-progress";
 import { StickyWrapper } from "@/components/sticky-wrapper";
+import { Button } from "@/components/ui/button";
+import Loading from "../loading";
+import { Promo } from "@/components/promo";
 
-interface ReadingExercise {
-    _id: string;
-    task: string;
-    correct: number;
-    exerciseType: string;
-    point: string;
-    passage: string;
-    questions: { question: string; options: string[]; correctAnswer: string }[]; 
-    group: string;
+interface ListeningExercise {
+  _id: string;
+  task: string;
+  correct: number;
+  exerciseType: string;
+  point: string;
+  title: string;
+  question: string[];
+  video: string;
+  group: string;
 }
 
-const ReadingPage = () => {
-    const { user } = useClerk();
-    const router = useRouter();
+const ListeningPage = () => {
+  const { user } = useClerk(); 
+  const router = useRouter();
 
-    const [exercise, setExercise] = useState<ReadingExercise | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [userAnswer, setUserAnswer] = useState<number | null>(null);
-    const [answerStatus, setAnswerStatus] = useState<"correct" | "incorrect" | null>(null);
-    const [score, setScore] = useState(0);
+  const [exercise, setExercise] = useState<ListeningExercise | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [userAnswer, setUserAnswer] = useState<number | null>(null);
+  const [answerStatus, setAnswerStatus] = useState<"correct" | "incorrect" | null>(null);
+  const [score, setScore] = useState(0);
+  const [hearts, setHearts] = useState(5);
+  const [sub, setSub] = useState(false);
+  const [hasAnsweredCorrectly, setHasAnsweredCorrectly] = useState(false);
 
-    useEffect(() => {
-        const fetchExercise = async () => {
-            if (!user?.id) return; // Ensure user is authenticated
-            try {
-                const response = await fetch("/api/reading"); // Adjust the API endpoint for reading
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.ReadingExercise && data.ReadingExercise.length > 0) {
-                        setExercise(data.ReadingExercise[0]);
-                    } else {
-                        setExercise(null); // No exercises found, set to null
-                    }
-                } else {
-                    setExercise(null); // In case of failed API call, set to null
-                }
-            } catch (error) {
-                console.error("Error fetching exercise data:", error);
-                setExercise(null); // In case of error, set to null
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchExercise();
-    }, [user]); // Run when `user` changes
-
-    const handleAnswerSelect = (index: number) => {
-        if (userAnswer !== null) return; // Prevent multiple answers
-        setUserAnswer(index);
-        const correctAnswer = exercise?.questions[0].correctAnswer;
-
-        if (exercise?.questions[0].options[index] === correctAnswer) {
-            setScore(score + parseInt(exercise?.point || "0", 10));
-            setAnswerStatus("correct");
+  useEffect(() => {
+    const fetchExercise = async () => {
+      try {
+        const response = await fetch("/api/listening");
+        if (response.ok) {
+          const data = await response.json();
+          setExercise(data.ListeningExercise[0]);
         } else {
-            setAnswerStatus("incorrect");
+          console.error("Failed to fetch exercise data");
         }
+      } catch (error) {
+        console.error("Error fetching exercise data:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    if (loading) return <div>Loading...</div>;
-    if (!exercise) return <div>No reading exercises found. Please try again later.</div>; // Show a user-friendly message
+    const fetchUserData = async () => {
+      if (!user?.id) return;
+      try {
+        const response = await fetch(`/api/user?userId=${user.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setHearts(data.userHearts || 5); 
+          setScore(data.userExp || 0); 
+          setSub(data.subscription || false)
+        } else {
+          console.error("Error fetching user data");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
 
-    return (
-        <div className="flex gap-[48px] px-6">
-            <FeedWrapper>
-                <Header title="Reading Exercise" />
-                <div className="space-y-4">
-                    <p>{exercise.passage}</p>
-                    <div className="my-4 p-4 bg-white shadow-lg rounded-md border border-gray-200">
-                        <h2 className="text-xl font-semibold mb-4">{exercise.task}</h2>
+    fetchExercise();
+    fetchUserData();
+  }, [user]);
 
-                        {exercise.questions.map((q, index) => (
-                            <div key={index}>
-                                <p>{q.question}</p>
-                                <div className="space-y-4">
-                                    {q.options.map((option, optionIndex) => (
-                                        <button
-                                            key={optionIndex}
-                                            className={`w-full p-4 text-left rounded-lg border ${
-                                                userAnswer === optionIndex
-                                                    ? answerStatus === "correct"
-                                                        ? "bg-green-500 text-white"
-                                                        : "bg-red-500 text-white"
-                                                    : "bg-gray-100"
-                                            } hover:bg-gray-200`}
-                                            onClick={() => handleAnswerSelect(optionIndex)}
-                                            disabled={userAnswer !== null} // Disable after answer is selected
-                                        >
-                                            {option}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
+  const handleAnswerSelect = async (index: number) => {
+    if (hasAnsweredCorrectly) return;
 
-                        {userAnswer !== null && (
-                            <div className="mt-4 text-center text-xl font-semibold">
-                                {answerStatus === "correct" ? "Ճիշտ է!" : "Սխալ է. Փորձեք նորից!"}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </FeedWrapper>
+    setUserAnswer(index);
 
-            <StickyWrapper>
-                <UserProgress points={score} hearts={5} hasActiveSubscription={false} />
-            </StickyWrapper>
+    if (index === exercise?.correct) {
+      const newScore = score + parseInt(exercise.point, 10);
+      setScore(newScore);
+      setAnswerStatus("correct");
+      setHasAnsweredCorrectly(true);
+
+      try {
+        await axios.put("/api/user", {
+          userId: user?.id,
+          score: newScore,
+        });
+      } catch (error) {
+        console.error("Error updating user experience:", error);
+      }
+    } else {
+      setAnswerStatus("incorrect");
+      setHearts((prevHearts) => Math.max(0, prevHearts - 1));
+    }
+  };
+
+  const handleContinue = () => {
+    router.push("/learn");
+  };
+
+  if (loading) return <Loading/>;
+  if (!exercise) return <div>No exercise data available</div>;
+
+  const handleBack = () => {
+    router.push("/learn");
+  };
+
+  return (
+    <div className="flex gap-[48px] px-6">
+      <FeedWrapper>
+        <Header title="Listening Exercise" />
+        <div className="space-y-4" />
+
+        <div className="text-left mb-4">
+          
+          <Button onClick={handleBack} size="lg" className="rounded-full" variant={"ghost"}>
+            <img src="back.svg" alt="Back" className="w-4 h-4 mr-2" />
+            Back to Learn
+          </Button>
         </div>
-    );
+
+        <div className="my-4 p-4 rounded-md text-customDark">
+          <h2 className="text-xl font-semibold mb-4">{exercise.title}</h2>
+
+          <div className="mb-4">
+            <iframe
+              width="560"
+              height="315"
+              src={exercise.video}
+              title="YouTube video player"
+              allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+
+          <div className="text-customDark">
+            <h3 className="text-lg font-medium mb-4">{exercise.task}</h3>
+            <div className="space-y-4">
+              {exercise.question.map((option, index) => (
+                <button
+                  key={index}
+                  className={`w-full p-4 text-left rounded-lg ${
+                    userAnswer === index
+                      ? answerStatus === "correct"
+                        ? "bg-green-500 text-custom"
+                        : "bg-red-500 text-custom"
+                      : "bg-custom"
+                  } hover:bg-customShade`}
+                  onClick={() => handleAnswerSelect(index)}
+                  disabled={hasAnsweredCorrectly}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+
+            {userAnswer !== null && (
+              <div
+                className={`mt-4 text-center text-xl font-semibold ${
+                  answerStatus === "correct" ? "text-green-500" : "text-red-500"
+                }`}
+              >
+                {answerStatus === "correct" ? "Ճիշտ է!" : "Սխալ է. Փորձեք նորից!"}
+              </div>
+            )}
+          </div>
+
+          {hasAnsweredCorrectly && (
+            <div className="mt-6 text-center">
+              <Button variant="primary" onClick={handleContinue}> Continue </Button>
+            </div>
+          )}
+        </div>
+      </FeedWrapper>
+
+      <StickyWrapper>
+        <UserProgress hearts={hearts} points={score} hasActiveSubscription={sub} />
+        {sub === false && <Promo />}
+      </StickyWrapper>
+    </div>
+  );
 };
 
-export default ReadingPage;
+export default ListeningPage;
