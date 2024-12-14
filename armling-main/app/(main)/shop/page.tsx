@@ -48,34 +48,41 @@ const ShopPage = () => {
         }
     }, [user]);
 
-    //Problems below
-    useEffect(() => {
-        if (userData && userData.lastHeartUpdate) {
-            const updateTimer = () => {
-                const now = Date.now();
-                const lastUpdate = new Date(userData.lastHeartUpdate).getTime();
-                const timeElapsed = Math.floor((now - lastUpdate) / 1000);
-                const heartsToAdd = Math.floor(timeElapsed / 300);
+    const updateTimer = async () => {
+        const now = Date.now();
+        if (!userData) return;
 
-                if (heartsToAdd > 0 && userData.userHearts < 5) {
-                    const newHearts = Math.min(userData.userHearts + heartsToAdd, 5);
-                    setUserData((prev) => prev && { ...prev, userHearts: newHearts });
-
-                    const newLastUpdate = new Date(lastUpdate + heartsToAdd * 300 * 1000);
-                    setUserData((prev) =>
-                        prev && { ...prev, lastHeartUpdate: newLastUpdate.toISOString() }
-                    );
+        const lastUpdate = new Date(userData.lastHeartUpdate).getTime();
+        const timeElapsed = Math.floor((now - lastUpdate) / 1000);
+        const heartsToAdd = Math.floor(timeElapsed / 300);
+    
+        if (heartsToAdd > 0 && userData.userHearts < 5) {
+            const newHearts = Math.min(userData.userHearts + heartsToAdd, 5);
+            setUserData((prev) => prev && { ...prev, userHearts: newHearts });
+    
+            const newLastUpdate = new Date(lastUpdate + heartsToAdd * 300 * 1000);
+            setUserData((prev) =>
+                prev && { ...prev, lastHeartUpdate: newLastUpdate.toISOString() }
+            );
+    
+            try {
+                const response = await fetch('/api/heart-refill');
+                if (!response.ok) {
+                    console.error('Failed to call heart refill API');
                 }
-
-                const nextRefillTime = 300 - (timeElapsed % 300);
-                setTime(nextRefillTime);
-            };
-
-            updateTimer();
-
-            const timer = setInterval(updateTimer, 1000);
-            return () => clearInterval(timer);
+            } catch (error) {
+                console.error('Error calling heart refill API:', error);
+            }
         }
+    
+        const nextRefillTime = 300 - (timeElapsed % 300);
+        setTime(nextRefillTime);
+    };
+    
+    
+    useEffect(() => {
+        const timer = setInterval(updateTimer, 1000);
+        return () => clearInterval(timer);
     }, [userData]);
 
     if (loading) return <Loading/>
