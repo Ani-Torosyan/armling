@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useClerk } from "@clerk/nextjs"; 
+import Loading from "../loading";
 import { StickyWrapper } from "@/components/sticky-wrapper";
-import { FeedWrapper } from "@/components/feed-wrapper";
 import { UserProgress } from "@/components/user-progress";
+import { FeedWrapper } from "@/components/feed-wrapper";
 import { Header } from "../header";
 import { Items } from "./items";
-import Loading from "../loading";
 
 type User = {
     userName: string;
@@ -80,7 +80,6 @@ const ShopPage = () => {
         setTime(nextRefillTime);
     };
     
-    
     useEffect(() => {
         const timer = setInterval(updateTimer, 1000);
         return () => clearInterval(timer);
@@ -112,5 +111,3 @@ const ShopPage = () => {
 };
 
 export default ShopPage;
-
-
