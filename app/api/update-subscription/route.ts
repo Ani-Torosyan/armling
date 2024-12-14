@@ -1,24 +1,32 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import User from '@/modals/user.modal';
+import { NextResponse } from 'next/server';
 import { connect } from '@/db';
+import User from '@/modals/user.modal';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method === 'POST') {
-        const { userId } = req.body;
+export async function PUT(request: Request) {
+    try {
+        await connect();
+
+        const body = await request.json();
+        const { userId } = body;
 
         if (!userId) {
-            return res.status(400).json({ error: 'User ID is required' });
+            return NextResponse.json({ message: 'User ID is required' }, { status: 400 });
         }
 
-        try {
-            await connect();
-            await User.updateOne({ clerkId: userId }, { $set: { subscription: true } });
-            return res.status(200).json({ message: 'Subscription updated successfully' });
-        } catch (error) {
-            console.error('Error updating subscription:', error);
-            return res.status(500).json({ error: 'Internal server error' });
+        const user = await User.findOneAndUpdate(
+            { clerkId: userId },
+            { $set: { subscription: true } },
+            { new: true }
+        );
+
+        if (!user) {
+            return NextResponse.json({ message: 'User not found' }, { status: 404 });
         }
-    } else {
-        return res.status(405).json({ error: 'Method not allowed' });
+
+        return NextResponse.json({ message: 'Subscription updated successfully', user });
+
+    } catch (error) {
+        console.error('Error updating subscription:', error);
+        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
     }
 }
