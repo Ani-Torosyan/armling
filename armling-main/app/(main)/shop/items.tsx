@@ -17,7 +17,7 @@ export const Items = ({ hearts, time, sub }: Props) => {
 
     const handleUpgrade = async () => {
         if (!user?.id) return;
-        
+
         try {
             const response = await fetch('/api/update-subscription', {
                 method: 'POST',
@@ -28,8 +28,7 @@ export const Items = ({ hearts, time, sub }: Props) => {
             });
 
             if (response.ok) {
-                
-                window.location.href = "https://buy.stripe.com/test_4gw7vYdPn7001a0000";
+                setIsSubscribed(true);
             } else {
                 console.error('Failed to update subscription');
             }
