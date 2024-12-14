@@ -17,7 +17,7 @@ export const Items = ({ hearts, time, sub }: Props) => {
 
     const handleUpgrade = async () => {
         if (!user?.id) return;
-
+        
         try {
             const response = await fetch('/api/update-subscription', {
                 method: 'POST',
@@ -28,7 +28,7 @@ export const Items = ({ hearts, time, sub }: Props) => {
             });
 
             if (response.ok) {
-                setIsSubscribed(true);
+                
                 window.location.href = "https://buy.stripe.com/test_4gw7vYdPn7001a0000";
             } else {
                 console.error('Failed to update subscription');
@@ -56,7 +56,7 @@ export const Items = ({ hearts, time, sub }: Props) => {
                     )}
                 </Button>
             </div>
-            <div className="flex items_center w-full p-4 pt-8 gap-x-4 border-t-2 border-customShade">
+            <div className="flex items-center w-full p-4 pt-8 gap-x-4 border-t-2 border-customShade">
                 <Image src="/unlimited.svg" alt="Unlimited" height={50} width={50} />
                 <div className="flex-1">
                     <p className="text-customDark text-base lg:text-xl font-bold">
