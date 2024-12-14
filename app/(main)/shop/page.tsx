@@ -17,14 +17,13 @@ type User = {
     lastName: string;
     userHearts: number;
     lastHeartUpdate: string;
-    subscription: boolean;
 };
 
 const ShopPage = () => {
     const { user } = useClerk();
     const [userData, setUserData] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
-    //const [time, setTime] = useState<number>(0);
+    const [time, setTime] = useState<number>(0);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -48,28 +47,43 @@ const ShopPage = () => {
             fetchUserData();
         }
     }, [user]);
-    
 
-    //TODO CHANGE THIS
-    /*useEffect(() => {
-        if (userData && userData.userHearts < 5) {
-            const updateTimer = () => {
-                const now = Date.now();
-                const lastUpdate = new Date(userData.lastHeartUpdate).getTime();
-                const timeElapsed = Math.floor((now - lastUpdate) / 1000);
+    const updateTimer = async () => {
+        const now = Date.now();
+        if (!userData) return;
+
+        const lastUpdate = new Date(userData.lastHeartUpdate).getTime();
+        const timeElapsed = Math.floor((now - lastUpdate) / 1000);
+        const heartsToAdd = Math.floor(timeElapsed / 300);
     
-                const nextRefillTime = 300 - (timeElapsed % 300);
-                setTime(nextRefillTime);
-            };
+        if (heartsToAdd > 0 && userData.userHearts < 5) {
+            const newHearts = Math.min(userData.userHearts + heartsToAdd, 5);
+            setUserData((prev) => prev && { ...prev, userHearts: newHearts });
     
-            updateTimer();
+            const newLastUpdate = new Date(lastUpdate + heartsToAdd * 300 * 1000);
+            setUserData((prev) =>
+                prev && { ...prev, lastHeartUpdate: newLastUpdate.toISOString() }
+            );
     
-            const timer = setInterval(updateTimer, 1000);
-    
-            return () => clearInterval(timer);
+            try {
+                const response = await fetch('/api/heart-refill');
+                if (!response.ok) {
+                    console.error('Failed to call heart refill API');
+                }
+            } catch (error) {
+                console.error('Error calling heart refill API:', error);
+            }
         }
-    }, [userData]);*/
     
+        const nextRefillTime = 300 - (timeElapsed % 300);
+        setTime(nextRefillTime);
+    };
+    
+    
+    useEffect(() => {
+        const timer = setInterval(updateTimer, 1000);
+        return () => clearInterval(timer);
+    }, [userData]);
 
     if (loading) return <Loading/>
 
@@ -83,15 +97,15 @@ const ShopPage = () => {
                 <UserProgress
                     hearts={userData.userHearts}
                     points={userData.userExp}
-                    hasActiveSubscription={userData.subscription}
+                    hasActiveSubscription={false}
                 />
             </StickyWrapper>
             <FeedWrapper>
                 <Header title="Shop" />
                 <div className="w-full flex flex-col items-center">
-                    <Items hearts={userData.userHearts} sub={userData.subscription} />
+                    <Items hearts={userData.userHearts} time={time} sub={false} />
                 </div>
-            </FeedWrapper> 
+            </FeedWrapper>
         </div>
     );
 };
