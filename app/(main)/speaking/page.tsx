@@ -1,3 +1,6 @@
+//TODO: upload into cloud
+//TODO: Speaking repetition case handeled, no more uploads
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -24,6 +27,7 @@ const SpeakingPage = () => {
   const [loading, setLoading] = useState(true);
   const [recording, setRecording] = useState<MediaRecorder | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [showContinue, setShowContinue] = useState(false);
 
   useEffect(() => {
     const fetchSpeakingExercises = async () => {
@@ -111,6 +115,10 @@ const SpeakingPage = () => {
     }
   };
 
+  const handleContinue = () => {
+    router.push("/learn");
+  };
+
   if (loading) return <Loading/>;
 
   return (
@@ -153,7 +161,10 @@ const SpeakingPage = () => {
                 )}
 
                 <Button
-                  onClick={() => uploadRecording(exercise._id)}
+                  onClick={() => {
+                    uploadRecording(exercise._id);
+                    setShowContinue(true);
+                  }}
                   variant={"primary"}
                   disabled={!audioBlob}
                 >
@@ -162,6 +173,13 @@ const SpeakingPage = () => {
               </div>
             </div>
           ))}
+
+          {showContinue && (
+            <div className="mt-6 text-center">
+              <Button variant="primary" onClick={handleContinue}> Continue </Button>
+            </div>
+          )}
+
         </div>
       </FeedWrapper>
     </div>

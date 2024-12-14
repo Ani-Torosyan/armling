@@ -1,3 +1,6 @@
+//TODO: Lesson repetition case handeled
+//TODO: Color of the feedback message and the images
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -82,7 +85,6 @@ const LessonPage = () => {
 
   const handleExerciseClick = async (exercise: LessonExercise) => {
     if (completedExercises.has(exercise._id)) {
-      setFeedbackMessage("Այս հարցին արդեն ճիշտ եք պատասխանել:"); //TODO does not work
       return;
     }
 
@@ -92,6 +94,7 @@ const LessonPage = () => {
     setAnswered(true);
 
     if (exercise.correct === "1") {
+      if(hearts == 0 && userData?.subscription === false) { router.push("/shop"); return;}
       const newPoints = points + parseInt(exercise.point);
       setPoints(newPoints);
       setFeedbackMessage("Ճիշտ է:");

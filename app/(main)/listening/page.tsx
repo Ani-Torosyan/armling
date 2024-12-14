@@ -1,3 +1,5 @@
+//TODO: Listening repetition case handeled
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -81,6 +83,7 @@ const ListeningPage = () => {
     setUserAnswer(index);
 
     if (index === exercise?.correct) {
+      if(hearts==0 && sub==false){ router.push("/shop"); return; }
       const newScore = score + parseInt(exercise.point, 10);
       setScore(newScore);
       setAnswerStatus("correct");
@@ -94,7 +97,9 @@ const ListeningPage = () => {
       } catch (error) {
         console.error("Error updating user experience:", error);
       }
-    } else {
+    } 
+    else if(answerStatus!=="correct" && hearts==0 && sub==false) router.push("/shop");
+    else {
       setAnswerStatus("incorrect");
       setHearts((prevHearts) => Math.max(0, prevHearts - 1));
     }
@@ -149,9 +154,9 @@ const ListeningPage = () => {
                     userAnswer === index
                       ? answerStatus === "correct"
                         ? "bg-green-500 text-customDark"
-                        : "bg-red-500 text-customDark"
+                        : "bg-red-500 text-customDark hover:bg-red-500/90"
                       : "bg-custom"
-                  } hover:bg-customMid`}
+                  }`}
                   onClick={() => handleAnswerSelect(index)}
                   disabled={hasAnsweredCorrectly}
                 >
