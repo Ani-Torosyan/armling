@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useState } from "react";
+import { useClerk } from "@clerk/nextjs";
 
 type Props = {
     hearts: number;
@@ -12,6 +13,30 @@ type Props = {
 
 export const Items = ({ hearts, time, sub }: Props) => {
     const [isSubscribed, setIsSubscribed] = useState(sub);
+    const { user } = useClerk();
+
+    const handleUpgrade = async () => {
+        if (!user?.id) return;
+
+        try {
+            const response = await fetch('/api/update-subscription', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userId: user.id }),
+            });
+
+            if (response.ok) {
+                setIsSubscribed(true);
+                window.location.href = "https://buy.stripe.com/test_4gw7vYdPn7001a0000";
+            } else {
+                console.error('Failed to update subscription');
+            }
+        } catch (error) {
+            console.error('Error updating subscription:', error);
+        }
+    };
 
     return (
         <ul className="w-full">
@@ -38,19 +63,10 @@ export const Items = ({ hearts, time, sub }: Props) => {
                         Unlimited hearts
                     </p>
                 </div>
-                <Button disabled={isSubscribed} onClick={() => {
-                    window.location.href = "https://buy.stripe.com/test_4gw7vYdPn7001a0000";
-                    setIsSubscribed(true);
-                }}>
+                <Button disabled={isSubscribed} onClick={handleUpgrade}>
                     {isSubscribed ? "active" : "upgrade"}
                 </Button>
             </div>
         </ul>
     );
 };
-
-
-
-
-
-
