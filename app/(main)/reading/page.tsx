@@ -47,7 +47,6 @@ const ReadingPage = () => {
   const [loading, setLoading] = useState(true);
   const [userAnswers, setUserAnswers] = useState<(number | null)[]>([]);
   const [answerStatuses, setAnswerStatuses] = useState<("correct" | "incorrect" | null)[]>([]);
-  const [score, setScore] = useState(0);
   const [userData, setUserData] = useState<User | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
@@ -120,7 +119,6 @@ const ReadingPage = () => {
     });
 
     setAnswerStatuses(updatedAnswerStatuses);
-    setScore(calculatedScore);
     setSubmitted(true);
 
     try {

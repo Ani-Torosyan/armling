@@ -17,7 +17,6 @@ export async function GET() {
 
         const database = client.db("ArmLing");
 
-        // Fetch data from WritingExercises collection
         const WritingExerciseCollection = database.collection("WritingExercise");
         const WritingExercises = await WritingExerciseCollection.find({}).toArray();
 
