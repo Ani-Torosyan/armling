@@ -39,6 +39,9 @@ const ButtonsPage = () => {
             <Button variant={"sidebarOutline"}>
                 Sidebar Outline
             </Button>
+            <Button variant={"correct"}>
+                Correct
+            </Button>               
         </div>
     );
 };

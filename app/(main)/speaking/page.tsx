@@ -1,5 +1,5 @@
-//TODO: upload into cloud
-//TODO: Speaking repetition case handeled, no more uploads
+//TODO: Upload into cloud
+//TODO: Lesson repetition case handeled(no repetition allowed!)
 
 "use client";
 
@@ -116,7 +116,7 @@ const SpeakingPage = () => {
   };
 
   const handleContinue = () => {
-    router.push("/learn");
+    router.push("/writing");
   };
 
   if (loading) return <Loading/>;
@@ -155,6 +155,7 @@ const SpeakingPage = () => {
                   <Button
                     onClick={startRecording}
                     variant={"secondary"}
+                    disabled={showContinue}
                   >
                     Start Recording
                   </Button>
@@ -166,7 +167,7 @@ const SpeakingPage = () => {
                     setShowContinue(true);
                   }}
                   variant={"primary"}
-                  disabled={!audioBlob}
+                  disabled={!audioBlob || showContinue}
                 >
                   Upload Recording
                 </Button>
@@ -176,6 +177,7 @@ const SpeakingPage = () => {
 
           {showContinue && (
             <div className="mt-6 text-center">
+              <p className="text-green-600 font-semibold mb-2">Submission was successful!</p>
               <Button variant="primary" onClick={handleContinue}> Continue </Button>
             </div>
           )}

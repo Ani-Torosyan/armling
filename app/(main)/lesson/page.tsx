@@ -1,5 +1,6 @@
 //TODO: Lesson repetition case handeled
 //TODO: Color of the feedback message and the images
+//TODO: Update hearts after making mistake(update is done only locally)
 
 "use client";
 
@@ -41,9 +42,9 @@ const LessonPage = () => {
   const [answered, setAnswered] = useState(false);
   const [correctAnswerClicked, setCorrectAnswerClicked] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
-  const [hearts, setHearts] = useState(5);
-  const [points, setPoints] = useState(0);
   const [userData, setUserData] = useState<{ userHearts: number; userExp: number; subscription: boolean} | null>(null);
+  const [hearts, setHearts] = useState(userData?.userHearts || 5);
+  const [points, setPoints] = useState(userData?.userExp || 0);
   const [loading, setLoading] = useState(true);
 
   const completedExercises = new Set<string>(); 
@@ -121,7 +122,7 @@ const LessonPage = () => {
     setAnswered(false);
     setCorrectAnswerClicked(false);
     setFeedbackMessage(null);
-    router.push("/learn");
+    router.push("/reading");
   };
 
   const handleBack = () => {
@@ -163,14 +164,21 @@ const LessonPage = () => {
               >
                 <div className="absolute top-0 left-0 right-0 p-4 bg-opacity-70 bg-customDark text-custom text-lg font-semibold text-center">
                   {exercise.name}
-                </div>
+                </div>        
                 <button
                   onClick={() => handleExerciseClick(exercise)}
-                  className="w-full h-48 flex items-center justify-center bg-cover bg-center"
-                  style={{ backgroundImage: `url(${exercise.picture})`, backgroundSize: "70%", backgroundPosition: "center", backgroundRepeat: "no-repeat", }}
+                  className={`w-full h-48 flex items-center justify-center bg-cover bg-center ${correctAnswerClicked ? 'opacity-50' : ''}`}
+                  style={{
+                    backgroundImage: `url(${exercise.picture})`,
+                    backgroundSize: "70%",
+                    backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
+                  }}
                   disabled={correctAnswerClicked}
                 >
-                  <div className="absolute inset-0 bg-customDark opacity-10 group-hover:opacity-40 transition-opacity"></div>
+                  <div
+                    className={`absolute inset-0 bg-customDark opacity-10 ${correctAnswerClicked ? "opacity-10" : "group-hover:opacity-40"} transition-opacity`}
+                  ></div>
                 </button>
               </div>
             ))}

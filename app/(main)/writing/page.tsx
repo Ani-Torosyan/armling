@@ -1,3 +1,6 @@
+//TODO: Upload the submission
+//TODO: Lesson repetition case handeled(no repetition allowed!)
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -18,13 +21,8 @@ interface WritingExercise {
 }
 
 type User = {
-  userName: string;
   userExp: number;
-  userImg: string;
-  firstName: string;
-  lastName: string;
   userHearts: number;
-  lastHeartUpdate: string;
 };
 
 const WritingPage = () => {
@@ -112,9 +110,20 @@ const WritingPage = () => {
           </div>
         </div>
       </FeedWrapper>
-      <div className="mt-6 flex justify-center w-full">
-            <Button variant="primary" onClick={handleSubmitAll}>Submit</Button>
-      </div>
+      <div className="mt-6 flex flex-col items-center w-full">
+      {!submitted ? (
+        <Button 
+          variant="primary" 
+          onClick={handleSubmitAll} 
+          disabled={submitted}
+        >
+          Submit
+        </Button>
+      ) : (
+        <p className="text-green-600 font-semibold">Submission was successful!</p>
+      )}
+    </div>
+
     </div>
   );
 };

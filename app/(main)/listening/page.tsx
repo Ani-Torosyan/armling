@@ -1,4 +1,5 @@
 //TODO: Listening repetition case handeled
+//TODO: Update hearts after making mistake(update is done only locally)
 
 "use client";
 
@@ -106,7 +107,7 @@ const ListeningPage = () => {
   };
 
   const handleContinue = () => {
-    router.push("/learn");
+    router.push("/speaking");
   };
 
   if (loading) return <Loading/>;
@@ -150,13 +151,13 @@ const ListeningPage = () => {
               {exercise.question.map((option, index) => (
                 <Button
                   key={index}
-                  className={`${
+                  variant={
                     userAnswer === index
                       ? answerStatus === "correct"
-                        ? "bg-green-500 text-customDark"
-                        : "bg-red-500 text-customDark hover:bg-red-500/90"
-                      : "bg-custom"
-                  }`}
+                        ? "correct"
+                        : "danger"
+                      : "default"
+                  }
                   onClick={() => handleAnswerSelect(index)}
                   disabled={hasAnsweredCorrectly}
                 >
