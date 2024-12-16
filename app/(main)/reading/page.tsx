@@ -1,4 +1,7 @@
 //TODO: Update hearts after making mistake
+//TODO: Handle reading repetition
+//TODO: For every question get a point 
+
 "use client";
 
 import { useState, useEffect } from "react";

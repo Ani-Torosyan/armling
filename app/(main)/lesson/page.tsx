@@ -1,4 +1,5 @@
 //TODO: Update hearts after making mistake(update is done only locally)
+
 "use client";
 
 import { useState, useEffect } from "react";
