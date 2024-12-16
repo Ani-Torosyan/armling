@@ -1,7 +1,4 @@
-//TODO: Reading repetition case handeled
 //TODO: Update hearts after making mistake
-//TODO: Update points after BOTH answers are right
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -31,6 +28,7 @@ interface ReadingExercise {
   passage: string;
   questions: Question[];
   group: string;
+  uuid: string;
 }
 
 type User = {
@@ -96,7 +94,6 @@ const ReadingPage = () => {
   };
 
   const setStatus = () => {
-
     const statuses = exercise?.questions.map((q, index) => {
       const userAnswer = userAnswers[index];
       if (userAnswer == null || userAnswer === undefined) return "incorrect";  
@@ -104,18 +101,42 @@ const ReadingPage = () => {
       if (!option) return "incorrect";  
       const isCorrect = option.trim().toLowerCase() === q.correctAnswer.trim().toLowerCase();
       return isCorrect ? "correct" : "incorrect";
-
     }) || [];
 
     setAnswerStatuses(statuses);
   };
 
-  const handleSubmitAllAnswers = () => {
-    if(userData?.userHearts==0 && userData.subscription==false){ router.push("/shop"); return; }
-    if (!exercise) return;
-    setStatus();
+  const handleSubmitAllAnswers = async () => {
+    if (userData?.userHearts == 0 && userData.subscription == false) {
+      router.push("/shop");
+      return;
+    }
+  
+    if (!exercise || !userData) return;
+  
+    setStatus(); // Make sure the answer statuses are calculated first
     setSubmitted(true);
+  
+    // Check if all answers are correct
+    const allAnswersCorrect = answerStatuses.every(status => status === "correct");
+  
+    if (allAnswersCorrect) {
+      // Only award points if all answers are correct
+      const updatedScore = userData.userExp + exercise.point;
+      await axios.put('/api/user', {
+        userId: user?.id,
+        score: updatedScore,
+        completedReadingUUID: exercise.uuid,
+      });
+  
+      // Update user data in state
+      setUserData(prev => prev ? { ...prev, userExp: updatedScore } : prev);
+    } else {
+      // Do not award points if even one answer is incorrect
+      console.log("Some answers are incorrect, no points awarded.");
+    }
   };
+  
 
   const handleContinue = () => {
     router.push("/listening");
@@ -216,5 +237,3 @@ const ReadingPage = () => {
 };
 
 export default ReadingPage;
-
-

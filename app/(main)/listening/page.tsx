@@ -1,4 +1,3 @@
-//TODO: Listening repetition case handeled
 //TODO: Update hearts after making mistake(update is done only locally)
 
 "use client";
@@ -25,6 +24,7 @@ interface ListeningExercise {
   question: string[];
   video: string;
   group: string;
+  uuid: string
 }
 
 const ListeningPage = () => {
@@ -84,27 +84,52 @@ const ListeningPage = () => {
     setUserAnswer(index);
 
     if (index === exercise?.correct) {
-      if(hearts==0 && sub==false){ router.push("/shop"); return; }
-      const newScore = score + parseInt(exercise.point, 10);
-      setScore(newScore);
-      setAnswerStatus("correct");
-      setHasAnsweredCorrectly(true);
+        if (hearts == 0 && sub == false) {
+            router.push("/shop");
+            return;
+        }
 
-      try {
-        await axios.put("/api/user", {
-          userId: user?.id,
-          score: newScore,
-        });
-      } catch (error) {
-        console.error("Error updating user experience:", error);
-      }
-    } 
-    else if(answerStatus!=="correct" && hearts==0 && sub==false) router.push("/shop");
-    else {
-      setAnswerStatus("incorrect");
-      setHearts((prevHearts) => Math.max(0, prevHearts - 1));
+        // Check if the exercise UUID is already in the user's completed listening exercises
+        let isAlreadyCompleted = false;
+
+        try {
+            const userDataResponse = await axios.get(`/api/user?userId=${user?.id}`);
+            if (userDataResponse.status === 200) {
+                const userData = userDataResponse.data;
+                isAlreadyCompleted = userData.completedListeningExercises?.includes(exercise.uuid);
+            }
+        } catch (error) {
+            console.error("Error fetching user data to check completed exercises:", error);
+        }
+
+        if (isAlreadyCompleted) {
+            setAnswerStatus("correct");
+            setHasAnsweredCorrectly(true);
+            return; // Do not increase the score or save the exercise again
+        }
+
+        const newScore = score + parseInt(exercise.point, 10);
+        setScore(newScore);
+        setAnswerStatus("correct");
+        setHasAnsweredCorrectly(true);
+
+        try {
+            await axios.put("/api/user", {
+                userId: user?.id,
+                score: newScore,
+                completedListeningUUID: exercise.uuid, // Pass the completed exercise UUID
+            });
+        } catch (error) {
+            console.error("Error updating user experience:", error);
+        }
+    } else if (answerStatus !== "correct" && hearts == 0 && sub == false) {
+        router.push("/shop");
+    } else {
+        setAnswerStatus("incorrect");
+        setHearts((prevHearts) => Math.max(0, prevHearts - 1));
     }
-  };
+};
+
 
   const handleContinue = () => {
     router.push("/speaking");

@@ -1,6 +1,3 @@
-//TODO: Upload the submission
-//TODO: Lesson repetition case handeled(no repetition allowed!)
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -18,11 +15,13 @@ interface WritingExercise {
   title: string;
   exerciseType: string;
   group: string;
+  uuid: string;
 }
 
 type User = {
   userExp: number;
   userHearts: number;
+  writing: string[]; 
 };
 
 const WritingPage = () => {
@@ -56,6 +55,11 @@ const WritingPage = () => {
         const response = await axios.get(`/api/user?userId=${user.id}`);
         if (response.status === 200) {
           setUserData(response.data);
+
+          // Check if the current exercise UUID is already submitted
+          if (response.data.writing?.includes(exercise?.uuid)) {
+            setSubmitted(true); 
+          }
         } else {
           console.error("Error fetching user data");
         }
@@ -64,13 +68,41 @@ const WritingPage = () => {
       }
     };
 
-    if (user) {
+    if (user && exercise) {
       fetchUserData();
     }
-  }, [user]);
+  }, [user, exercise]);
 
   const handleSubmitAll = async () => {
-    setSubmitted(true);
+    const textarea = document.querySelector("textarea");
+    const text = textarea?.value || "";
+
+    if (!text.trim()) {
+      alert("Please write something before submitting.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/save-text", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-clerk-user-id": user?.id || "",
+        },
+        body: JSON.stringify({ text, exerciseUUID: exercise?.uuid }),
+      });
+
+      if (response.ok) {
+        setSubmitted(true);
+      } else {
+        const errorData = await response.json();
+        console.error("Failed to save text:", errorData.message);
+        alert(errorData.message || "An error occurred. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error submitting text:", error);
+      alert("An error occurred. Please try again.");
+    }
   };
 
   const handleBackToLearn = () => {

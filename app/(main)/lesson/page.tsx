@@ -1,7 +1,4 @@
-//TODO: Lesson repetition case handeled
-//TODO: Color of the feedback message and the images
 //TODO: Update hearts after making mistake(update is done only locally)
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -40,14 +37,21 @@ const LessonPage = () => {
   const [lessonUnits, setLessonUnits] = useState<LessonUnit[]>([]);
   const [lessonExercises, setLessonExercises] = useState<LessonExercise[]>([]);
   const [answered, setAnswered] = useState(false);
-  const [correctAnswerClicked, setCorrectAnswerClicked] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
-  const [userData, setUserData] = useState<{ userHearts: number; userExp: number; subscription: boolean} | null>(null);
-  const [hearts, setHearts] = useState(userData?.userHearts || 5);
-  const [points, setPoints] = useState(userData?.userExp || 0);
+  const [feedbackColor, setFeedbackColor] = useState<string>(""); // Feedback color state
+  const [hearts, setHearts] = useState(5);
+  const [points, setPoints] = useState(0);
+  const [userData, setUserData] = useState<{
+    userHearts: number;
+    userExp: number;
+    subscription: boolean;
+    lesson: string[];
+  } | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const completedExercises = new Set<string>(); 
+  const [clickedExercise, setClickedExercise] = useState<{
+    id: string | null;
+    isCorrect: boolean | null;
+  }>({ id: null, isCorrect: null });
 
   useEffect(() => {
     const fetchLessonData = async () => {
@@ -62,16 +66,16 @@ const LessonPage = () => {
     };
 
     const fetchUserData = async () => {
-      if (!user?.id) return; 
+      if (!user?.id) return;
       try {
-        const response = await fetch(`/api/user?userId=${user.id}`);
-        if (response.ok) {
-          const data = await response.json();
+        const response = await axios.get(`/api/user?userId=${user.id}`);
+        if (response.status === 200) {
+          const data = await response.data;
           setUserData(data);
-          setHearts(data.userHearts || 5); 
-          setPoints(data.userExp || 0); 
+          setHearts(data.userHearts || 5);
+          setPoints(data.userExp || 0);
         } else {
-          console.error("Error fetching user data");
+          console.error("Error fetching user data:", response.statusText);
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -85,43 +89,74 @@ const LessonPage = () => {
   }, [user]);
 
   const handleExerciseClick = async (exercise: LessonExercise) => {
-    if (completedExercises.has(exercise._id)) {
-      return;
+    if (!userData || !lessonUnits.length) return;
+
+    const lessonUUID = lessonUnits[0]?.uuid;
+
+    // Check if the lesson is already completed
+    if (userData.lesson?.includes(lessonUUID)) {
+      setFeedbackMessage("Դուք արդեն ավարտել եք այս դասը:"); // Message for completed lesson
+      return; // Prevent further actions if the lesson is already completed
     }
 
+    // Play the exercise audio
     const audio = new Audio(exercise.audio);
     audio.play();
-
     setAnswered(true);
 
-    if (exercise.correct === "1") {
-      if(hearts == 0 && userData?.subscription === false) { router.push("/shop"); return;}
-      const newPoints = points + parseInt(exercise.point);
-      setPoints(newPoints);
-      setFeedbackMessage("Ճիշտ է:");
-      setCorrectAnswerClicked(true);
+    // Check if the answer is correct
+    const isCorrect = exercise.correct === "1";
+    setClickedExercise({ id: exercise._id, isCorrect });
 
-      completedExercises.add(exercise._id);
+    if (isCorrect) {
+      const newPoints = points + parseInt(exercise.point, 10);
+      setPoints(newPoints);
+      setFeedbackMessage("Ճիշտ է!");
+      setFeedbackColor("text-green-500"); // Correct answer feedback
 
       try {
-        await axios.put("/api/user", {
+        const response = await axios.put("/api/user", {
           userId: user?.id,
           score: newPoints,
+          completedLessonUUID: lessonUUID, // Send lesson UUID to backend
         });
+
+        if (response.status === 200) {
+          // Update the user's data after a successful backend response
+          setUserData((prev) => {
+            if (!prev) return null;
+            return {
+              ...prev,
+              userExp: newPoints, // Update the experience points
+              lesson: Array.isArray(prev.lesson)
+                ? [...prev.lesson, lessonUUID] // Mark lesson as completed
+                : [lessonUUID],
+            };
+          });
+        } else {
+          console.error("Failed to update user in the backend:", response.statusText);
+        }
       } catch (error) {
         console.error("Error updating user experience:", error);
       }
-    } else if(hearts == 0 && userData?.subscription === false) router.push("/shop");
-      else if(userData?.subscription === false) {
-      setFeedbackMessage("Սխալ է. Փորձեք նորից:");
-      setHearts((prevHearts) => Math.max(0, prevHearts - 1));      
+    } else {
+      setFeedbackMessage("Սխալ է. Փորձեք նորից:"); // Incorrect answer feedback
+      setFeedbackColor("text-red-500");
+
+      // Handle hearts and subscription logic here
+      if (hearts === 0 && !userData.subscription) {
+        router.push("/shop");
+      } else if (!userData.subscription) {
+        setHearts((prevHearts) => Math.max(0, prevHearts - 1));
+      }
     }
   };
 
   const handleContinue = () => {
     setAnswered(false);
-    setCorrectAnswerClicked(false);
     setFeedbackMessage(null);
+    setClickedExercise({ id: null, isCorrect: null });
+    setFeedbackColor(""); // Reset feedback color
     router.push("/reading");
   };
 
@@ -129,7 +164,7 @@ const LessonPage = () => {
     router.push("/learn");
   };
 
-  if (loading) return <Loading/>;
+  if (loading) return <Loading />;
   if (!userData) return <div>No user data available</div>;
 
   return (
@@ -139,71 +174,75 @@ const LessonPage = () => {
         <div className="space-y-4" />
 
         <div className="text-left mb-4">
-          
           <Button onClick={handleBack} size="lg" className="rounded-full" variant={"ghost"}>
             <img src="back.svg" alt="Back" className="w-4 h-4 mr-2" />
             Back to Learn
           </Button>
         </div>
 
-        <div>
-          {lessonUnits.map((unit) => (
-            <div key={unit._id} className="my-4 p-4 text-customDark">
-              <h3 className="text-xl">{unit.title}</h3>
-              <p className="text-customShade">{unit.question}</p>
-            </div>
-          ))}
-        </div>
-
-        <div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-6">
-            {lessonExercises.map((exercise) => (
-              <div
-                key={exercise._id}
-                className={`relative group flex flex-col items-center justify-center rounded-lg overflow-hidden transform transition-all duration-300 ease-in-out`}
-              >
-                <div className="absolute top-0 left-0 right-0 p-4 bg-opacity-70 bg-customDark text-custom text-lg font-semibold text-center">
-                  {exercise.name}
-                </div>        
-                <button
-                  onClick={() => handleExerciseClick(exercise)}
-                  className={`w-full h-48 flex items-center justify-center bg-cover bg-center ${correctAnswerClicked ? 'opacity-50' : ''}`}
-                  style={{
-                    backgroundImage: `url(${exercise.picture})`,
-                    backgroundSize: "70%",
-                    backgroundPosition: "center",
-                    backgroundRepeat: "no-repeat",
-                  }}
-                  disabled={correctAnswerClicked}
-                >
-                  <div
-                    className={`absolute inset-0 bg-customDark opacity-10 ${correctAnswerClicked ? "opacity-10" : "group-hover:opacity-40"} transition-opacity`}
-                  ></div>
-                </button>
+        {feedbackMessage === "Դուք արդեն ավարտել եք այս դասը." ? (
+          <div className="text-center text-xl font-bold">Դուք արդեն ավարտել եք այս դասը:</div>
+        ) : (
+          <div>
+            {lessonUnits.map((unit) => (
+              <div key={unit._id} className="my-4 p-4 text-customDark">
+                <h3 className="text-xl font-semibold">{unit.title}</h3>
+                <p className="text-customShade">{unit.question}</p>
               </div>
             ))}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-6">
+              {lessonExercises.map((exercise) => (
+                <div
+                  key={exercise._id}
+                  className={`relative group flex flex-col items-center justify-center rounded-lg overflow-hidden ${
+                    clickedExercise.id === exercise._id
+                      ? clickedExercise.isCorrect
+                        ? "bg-green-500"
+                        : "bg-red-500"
+                      : ""
+                  }`}
+                >
+                  <div className="absolute top-0 left-0 right-0 p-4 bg-opacity-70 bg-customDark text-custom text-lg font-semibold text-center">
+                    {exercise.name}
+                  </div>
+                  <button
+                    onClick={() => handleExerciseClick(exercise)}
+                    className="w-full h-48 flex items-center justify-center bg-cover bg-center"
+                    style={{
+                      backgroundImage: `url(${exercise.picture})`,
+                      backgroundSize: "70%",
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
+                    }}
+                    disabled={answered && clickedExercise.id === exercise._id} // Disable only the currently clicked answer
+                  >
+                    <div className="absolute inset-0 bg-customDark opacity-10 group-hover:opacity-40 transition-opacity"></div>
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
+        )}
 
-          {feedbackMessage && (
-            <div className="mt-4 text-center text-xl font-semibold">
-              <p className="text-customDark">
-                {feedbackMessage}
-              </p>
-            </div>
-          )}
+        {feedbackMessage && (
+          <div className="mt-4 text-center text-xl font-semibold">
+            <p className={`font-semibold ${feedbackColor}`}>{feedbackMessage}</p>
+          </div>
+        )}
 
-
-          {answered && correctAnswerClicked && (
-            <div className="mt-6 text-center">
-              <Button variant="primary" onClick={handleContinue}> Continue </Button>
-            </div>
-          )}
-        </div>
+        {answered && (
+          <div className="mt-6 text-center">
+            <Button variant="primary" onClick={handleContinue}>
+              Continue
+            </Button>
+          </div>
+        )}
       </FeedWrapper>
 
       <StickyWrapper>
         <UserProgress hearts={hearts} points={points} hasActiveSubscription={userData.subscription} />
-        {userData.subscription === false && <Promo />}
+        {!userData.subscription && <Promo />}
       </StickyWrapper>
     </div>
   );
