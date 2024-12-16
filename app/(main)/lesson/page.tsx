@@ -38,7 +38,7 @@ const LessonPage = () => {
   const [lessonExercises, setLessonExercises] = useState<LessonExercise[]>([]);
   const [answered, setAnswered] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
-  const [feedbackColor, setFeedbackColor] = useState<string>(""); // Feedback color state
+  const [feedbackColor, setFeedbackColor] = useState<string>(""); 
   const [hearts, setHearts] = useState(5);
   const [points, setPoints] = useState(0);
   const [userData, setUserData] = useState<{
@@ -93,43 +93,34 @@ const LessonPage = () => {
 
     const lessonUUID = lessonUnits[0]?.uuid;
 
-    // Check if the lesson is already completed
-    if (userData.lesson?.includes(lessonUUID)) {
-      setFeedbackMessage("Դուք արդեն ավարտել եք այս դասը:"); // Message for completed lesson
-      return; // Prevent further actions if the lesson is already completed
-    }
-
-    // Play the exercise audio
     const audio = new Audio(exercise.audio);
     audio.play();
     setAnswered(true);
 
-    // Check if the answer is correct
     const isCorrect = exercise.correct === "1";
     setClickedExercise({ id: exercise._id, isCorrect });
 
     if (isCorrect) {
       const newPoints = points + parseInt(exercise.point, 10);
-      setPoints(newPoints);
+      if (userData.lesson?.includes(lessonUUID)) setPoints(newPoints);
       setFeedbackMessage("Ճիշտ է!");
-      setFeedbackColor("text-green-500"); // Correct answer feedback
+      setFeedbackColor("text-green-500"); 
 
       try {
         const response = await axios.put("/api/user", {
           userId: user?.id,
           score: newPoints,
-          completedLessonUUID: lessonUUID, // Send lesson UUID to backend
+          completedLessonUUID: lessonUUID, 
         });
 
         if (response.status === 200) {
-          // Update the user's data after a successful backend response
           setUserData((prev) => {
             if (!prev) return null;
             return {
               ...prev,
-              userExp: newPoints, // Update the experience points
+              userExp: newPoints, 
               lesson: Array.isArray(prev.lesson)
-                ? [...prev.lesson, lessonUUID] // Mark lesson as completed
+                ? [...prev.lesson, lessonUUID] 
                 : [lessonUUID],
             };
           });
@@ -140,10 +131,9 @@ const LessonPage = () => {
         console.error("Error updating user experience:", error);
       }
     } else {
-      setFeedbackMessage("Սխալ է. Փորձեք նորից:"); // Incorrect answer feedback
+      setFeedbackMessage("Սխալ է. Փորձեք նորից:"); 
       setFeedbackColor("text-red-500");
 
-      // Handle hearts and subscription logic here
       if (hearts === 0 && !userData.subscription) {
         router.push("/shop");
       } else if (!userData.subscription) {
@@ -156,7 +146,7 @@ const LessonPage = () => {
     setAnswered(false);
     setFeedbackMessage(null);
     setClickedExercise({ id: null, isCorrect: null });
-    setFeedbackColor(""); // Reset feedback color
+    setFeedbackColor(""); 
     router.push("/reading");
   };
 
@@ -208,16 +198,19 @@ const LessonPage = () => {
                   </div>
                   <button
                     onClick={() => handleExerciseClick(exercise)}
-                    className="w-full h-48 flex items-center justify-center bg-cover bg-center"
+                    className={`w-full h-48 flex items-center justify-center bg-cover bg-center ${clickedExercise.isCorrect ? 'opacity-50' : ''}`}
                     style={{
                       backgroundImage: `url(${exercise.picture})`,
                       backgroundSize: "70%",
                       backgroundPosition: "center",
                       backgroundRepeat: "no-repeat",
                     }}
-                    disabled={answered && clickedExercise.id === exercise._id} // Disable only the currently clicked answer
+                    disabled={clickedExercise.isCorrect ?? false}
+
                   >
-                    <div className="absolute inset-0 bg-customDark opacity-10 group-hover:opacity-40 transition-opacity"></div>
+                    <div
+                      className={`absolute inset-0 bg-customDark opacity-10 ${clickedExercise.isCorrect ? "opacity-10" : "group-hover:opacity-40"} transition-opacity`}
+                    ></div>
                   </button>
                 </div>
               ))}

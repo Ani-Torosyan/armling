@@ -114,14 +114,12 @@ const ReadingPage = () => {
   
     if (!exercise || !userData) return;
   
-    setStatus(); // Make sure the answer statuses are calculated first
+    setStatus();
     setSubmitted(true);
   
-    // Check if all answers are correct
     const allAnswersCorrect = answerStatuses.every(status => status === "correct");
   
     if (allAnswersCorrect) {
-      // Only award points if all answers are correct
       const updatedScore = userData.userExp + exercise.point;
       await axios.put('/api/user', {
         userId: user?.id,
@@ -129,10 +127,8 @@ const ReadingPage = () => {
         completedReadingUUID: exercise.uuid,
       });
   
-      // Update user data in state
       setUserData(prev => prev ? { ...prev, userExp: updatedScore } : prev);
     } else {
-      // Do not award points if even one answer is incorrect
       console.log("Some answers are incorrect, no points awarded.");
     }
   };

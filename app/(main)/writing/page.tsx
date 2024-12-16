@@ -56,7 +56,6 @@ const WritingPage = () => {
         if (response.status === 200) {
           setUserData(response.data);
 
-          // Check if the current exercise UUID is already submitted
           if (response.data.writing?.includes(exercise?.uuid)) {
             setSubmitted(true); 
           }
@@ -116,7 +115,7 @@ const WritingPage = () => {
   }
 
   if (!userData) {
-    return <div>No user data available</div>;
+    return <Loading />;
   }
 
   return (

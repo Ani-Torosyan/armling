@@ -89,7 +89,7 @@ const ListeningPage = () => {
             return;
         }
 
-        // Check if the exercise UUID is already in the user's completed listening exercises
+        setAnswerStatus("correct");
         let isAlreadyCompleted = false;
 
         try {
@@ -105,19 +105,18 @@ const ListeningPage = () => {
         if (isAlreadyCompleted) {
             setAnswerStatus("correct");
             setHasAnsweredCorrectly(true);
-            return; // Do not increase the score or save the exercise again
+            return; 
         }
 
         const newScore = score + parseInt(exercise.point, 10);
-        setScore(newScore);
-        setAnswerStatus("correct");
+        if(!isAlreadyCompleted) setScore(newScore);
         setHasAnsweredCorrectly(true);
 
         try {
             await axios.put("/api/user", {
                 userId: user?.id,
                 score: newScore,
-                completedListeningUUID: exercise.uuid, // Pass the completed exercise UUID
+                completedListeningUUID: exercise.uuid, 
             });
         } catch (error) {
             console.error("Error updating user experience:", error);
