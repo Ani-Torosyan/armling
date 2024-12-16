@@ -44,7 +44,7 @@ export async function PUT(request: Request) {
       await connect();
   
       const body = await request.json();
-      const { userId, score, completedLessonUUID, completedReadingUUID, completedListeningUUID, completedSpeakingUUID, completedWritingUUID } = body;
+      const { userId, score, completedLessonUUID, completedReadingUUID, completedListeningUUID, completedSpeakingUUID } = body;
   
       if (!userId || score == null) {
         return NextResponse.json({ message: "User ID and score are required" }, { status: 400 });
