@@ -37,7 +37,6 @@ const LessonPage = () => {
 
   const [lessonUnits, setLessonUnits] = useState<LessonUnit[]>([]);
   const [lessonExercises, setLessonExercises] = useState<LessonExercise[]>([]);
-  const [answered, setAnswered] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [feedbackColor, setFeedbackColor] = useState<string>(""); 
   const [hearts, setHearts] = useState(5);
@@ -96,7 +95,11 @@ const LessonPage = () => {
 
     const audio = new Audio(exercise.audio);
     audio.play();
-    setAnswered(true);
+
+    if (hearts === 0 && !userData.subscription) {
+      router.push("/shop");
+      return;
+    }
 
     const isCorrect = exercise.correct === "1";
     setClickedExercise({ id: exercise._id, isCorrect });
@@ -131,20 +134,15 @@ const LessonPage = () => {
       } catch (error) {
         console.error("Error updating user experience:", error);
       }
-    } else {
+    } 
+    else if (!userData.subscription) {
+      setHearts((prevHearts) => Math.max(0, prevHearts - 1));
       setFeedbackMessage("Սխալ է. Փորձեք նորից:"); 
       setFeedbackColor("text-red-500");
-
-      if (hearts === 0 && !userData.subscription) {
-        router.push("/shop");
-      } else if (!userData.subscription) {
-        setHearts((prevHearts) => Math.max(0, prevHearts - 1));
-      }
     }
   };
 
   const handleContinue = () => {
-    setAnswered(false);
     setFeedbackMessage(null);
     setClickedExercise({ id: null, isCorrect: null });
     setFeedbackColor(""); 
