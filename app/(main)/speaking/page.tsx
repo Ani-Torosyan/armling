@@ -28,7 +28,8 @@ const SpeakingPage = () => {
   const [recording, setRecording] = useState<MediaRecorder | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [showContinue, setShowContinue] = useState(false);
-
+  const [rec, setRec] = useState(false);
+  
   useEffect(() => {
     const fetchSpeakingExercises = async () => {
       try {
@@ -146,7 +147,10 @@ const SpeakingPage = () => {
               <div className="mt-4 space-x-4 flex justify-center">
                 {recording ? (
                   <Button
-                    onClick={stopRecording}
+                  onClick={() => {
+                    setRec(true)
+                    stopRecording()
+                  }}
                     variant="danger"
                   >
                     Stop Recording
@@ -155,7 +159,7 @@ const SpeakingPage = () => {
                   <Button
                     onClick={startRecording}
                     variant={"secondary"}
-                    disabled={showContinue}
+                    disabled={showContinue || rec}
                   >
                     Start Recording
                   </Button>

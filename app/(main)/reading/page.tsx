@@ -219,7 +219,7 @@ const ReadingPage = () => {
           )}
 
           {submitted && answerStatuses.includes("incorrect") && (
-            <Button variant="secondary" onClick={handleRetry} className="mt-6">
+            <Button variant="primary" onClick={handleRetry} className="mt-6">
               Try Again
             </Button>
           )}

@@ -225,7 +225,7 @@ const LessonPage = () => {
           </div>
         )}
 
-        {answered && (
+        {clickedExercise.isCorrect && (
           <div className="mt-6 text-center">
             <Button variant="primary" onClick={handleContinue}>
               Continue
