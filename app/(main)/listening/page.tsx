@@ -1,5 +1,3 @@
-//TODO: Update hearts after making mistake(update is done only locally)
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -24,7 +22,7 @@ interface ListeningExercise {
   question: string[];
   video: string;
   group: string;
-  uuid: string
+  uuid: string;
 }
 
 const ListeningPage = () => {
@@ -121,20 +119,35 @@ const ListeningPage = () => {
         } catch (error) {
             console.error("Error updating user experience:", error);
         }
-    } else if (answerStatus !== "correct" && hearts == 0 && sub == false) {
-        router.push("/shop");
     } else {
         setAnswerStatus("incorrect");
-        setHearts((prevHearts) => Math.max(0, prevHearts - 1));
+
+        
+        if (hearts > 0) {
+            setHearts((prevHearts) => {
+                const newHearts = Math.max(0, prevHearts - 1);
+                // Update MongoDB with the new heart count
+                axios.put("/api/user", {
+                    userId: user?.id,
+                    hearts: newHearts,
+                }).catch((error) => {
+                    console.error("Error updating heart count in MongoDB:", error);
+                });
+                return newHearts;
+            });
+        }
+
+        if (hearts == 0 && !sub) {
+            router.push("/shop");
+        }
     }
 };
-
 
   const handleContinue = () => {
     router.push("/speaking");
   };
 
-  if (loading) return <Loading/>;
+  if (loading) return <Loading />;
   if (!exercise) return <div>No exercise data available</div>;
 
   const handleBack = () => {
@@ -148,7 +161,6 @@ const ListeningPage = () => {
         <div className="space-y-4" />
 
         <div className="text-left mb-4">
-          
           <Button onClick={handleBack} size="lg" className="rounded-full" variant={"ghost"}>
             <img src="back.svg" alt="Back" className="w-4 h-4 mr-2" />
             Back to Learn

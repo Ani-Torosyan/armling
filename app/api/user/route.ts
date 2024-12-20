@@ -59,7 +59,6 @@ export async function PUT(request: Request) {
       // Update lesson data
       if (completedLessonUUID && !user.lesson.includes(completedLessonUUID)) {
         user.lesson.push(completedLessonUUID);
-        user.userExp = score; 
       }
   
       // Update reading exercise data

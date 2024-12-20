@@ -1,5 +1,3 @@
-//TODO: Update hearts after making mistake(update is done only locally)
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -8,7 +6,6 @@ import { useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { FeedWrapper } from "@/components/feed-wrapper";
 import { Header } from "../header";
-import { UserProgress } from "@/components/user-progress";
 import { StickyWrapper } from "@/components/sticky-wrapper";
 import { Button } from "@/components/ui/button";
 import { Promo } from "@/components/promo";
@@ -39,10 +36,7 @@ const LessonPage = () => {
   const [lessonExercises, setLessonExercises] = useState<LessonExercise[]>([]);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [feedbackColor, setFeedbackColor] = useState<string>(""); 
-  const [hearts, setHearts] = useState(5);
-  const [points, setPoints] = useState(0);
   const [userData, setUserData] = useState<{
-    userHearts: number;
     userExp: number;
     subscription: boolean;
     lesson: string[];
@@ -72,8 +66,6 @@ const LessonPage = () => {
         if (response.status === 200) {
           const data = await response.data;
           setUserData(data);
-          setHearts(data.userHearts || 5);
-          setPoints(data.userExp || 0);
         } else {
           console.error("Error fetching user data:", response.statusText);
         }
@@ -96,24 +88,14 @@ const LessonPage = () => {
     const audio = new Audio(exercise.audio);
     audio.play();
 
-    if (hearts === 0 && !userData.subscription) {
-      router.push("/shop");
-      return;
-    }
-
-    const isCorrect = exercise.correct === "1";
-    setClickedExercise({ id: exercise._id, isCorrect });
-
-    if (isCorrect) {
-      const newPoints = points + parseInt(exercise.point, 10);
-      if (userData.lesson?.includes(lessonUUID)) setPoints(newPoints);
+    if (exercise.correct === "1") {
+      setClickedExercise({ id: exercise._id, isCorrect: true });
       setFeedbackMessage("Ճիշտ է!");
       setFeedbackColor("text-green-500"); 
 
       try {
         const response = await axios.put("/api/user", {
           userId: user?.id,
-          score: newPoints,
           completedLessonUUID: lessonUUID, 
         });
 
@@ -122,7 +104,6 @@ const LessonPage = () => {
             if (!prev) return null;
             return {
               ...prev,
-              userExp: newPoints, 
               lesson: Array.isArray(prev.lesson)
                 ? [...prev.lesson, lessonUUID] 
                 : [lessonUUID],
@@ -132,12 +113,11 @@ const LessonPage = () => {
           console.error("Failed to update user in the backend:", response.statusText);
         }
       } catch (error) {
-        console.error("Error updating user experience:", error);
+        console.error("Error updating user:", error);
       }
-    } 
-    else if (!userData.subscription) {
-      setHearts((prevHearts) => Math.max(0, prevHearts - 1));
-      setFeedbackMessage("Սխալ է. Փորձեք նորից:"); 
+    } else {
+      setClickedExercise({ id: exercise._id, isCorrect: false });
+      setFeedbackMessage("Սխալ է. Փորձեք նորից."); 
       setFeedbackColor("text-red-500");
     }
   };
@@ -205,7 +185,6 @@ const LessonPage = () => {
                       backgroundRepeat: "no-repeat",
                     }}
                     disabled={clickedExercise.isCorrect ?? false}
-
                   >
                     <div
                       className={`absolute inset-0 bg-customDark opacity-10 ${clickedExercise.isCorrect ? "opacity-10" : "group-hover:opacity-40"} transition-opacity`}
@@ -233,7 +212,6 @@ const LessonPage = () => {
       </FeedWrapper>
 
       <StickyWrapper>
-        <UserProgress hearts={hearts} points={points} hasActiveSubscription={userData.subscription} />
         {!userData.subscription && <Promo />}
       </StickyWrapper>
     </div>

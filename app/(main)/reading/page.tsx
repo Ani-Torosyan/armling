@@ -1,7 +1,3 @@
-//TODO: Update hearts after making mistake
-//TODO: Handle reading repetition
-//TODO: For every question get a point 
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -119,9 +115,21 @@ const ReadingPage = () => {
   
     setStatus();
     setSubmitted(true);
-  
+
     const allAnswersCorrect = answerStatuses.every(status => status === "correct");
-  
+
+    // deduct hearts and update MongoDB
+    if (!allAnswersCorrect && userData.userHearts > 0) {
+      const updatedHearts = userData.userHearts - 1;
+      await axios.put('/api/user', {
+        userId: user?.id,
+        hearts: updatedHearts,
+      });
+
+      setUserData(prev => prev ? { ...prev, userHearts: updatedHearts } : prev);
+    }
+
+    //  update score
     if (allAnswersCorrect) {
       const updatedScore = userData.userExp + exercise.point;
       await axios.put('/api/user', {
@@ -135,7 +143,6 @@ const ReadingPage = () => {
       console.log("Some answers are incorrect, no points awarded.");
     }
   };
-  
 
   const handleContinue = () => {
     router.push("/listening");
@@ -185,30 +192,14 @@ const ReadingPage = () => {
               <div className="flex justify-center items-center space-x-4">
                 {q.options.map((option, i) => (
                   <Button
-                    variant={
-                      userAnswers[index] === i
-                        ? submitted
-                          ? answerStatuses[index] === "correct"
-                            ? "correct" 
-                            : "danger" 
-                          : "secondary"
-                        : "default"
-                    }
+                    variant={submitted ? (answerStatuses[index] === "correct" ? "correct" : "danger") : "default"}
                     key={i}
                     onClick={() => handleAnswerSubmit(index, i)}
-                    className={`${
-                      submitted
-                        ? answerStatuses[index] !== null && userAnswers[index] === i
-                          ? answerStatuses[index] === "correct"
-                            ? "bg-green-500" 
-                            : "bg-red-500"   
-                          : ""
-                        : ""
-                    }`}
+                    className={`${submitted && answerStatuses[index] === "incorrect" ? "bg-red-500" : ""}`}
                     disabled={submitted}
                   >
                     {option}
-                  </Button>  
+                  </Button>
                 ))}
               </div>
               {submitted && userAnswers[index] !== null && (
