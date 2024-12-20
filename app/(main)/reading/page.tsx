@@ -119,6 +119,16 @@ const ReadingPage = () => {
     setSubmitted(true);
   
     const allAnswersCorrect = answerStatuses.every(status => status === "correct");
+
+    if (!allAnswersCorrect) {
+      if (userData.userHearts > 0) {
+        const updatedHearts = userData.userHearts - 1;
+        await axios.put("/api/user", {
+          userId: user?.id,
+          hearts: updatedHearts,
+        });
+      }
+    }
   
     if (allAnswersCorrect) {
       const updatedScore = userData.userExp + exercise.point;
