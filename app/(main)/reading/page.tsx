@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -112,14 +110,15 @@ const ReadingPage = () => {
       router.push("/shop");
       return;
     }
-  
+
     if (!exercise || !userData) return;
-  
+
     setStatus();
     setSubmitted(true);
-  
+
     const allAnswersCorrect = answerStatuses.every(status => status === "correct");
 
+    // If some answers are incorrect, deduct a heart and update MongoDB
     if (!allAnswersCorrect) {
       if (userData.userHearts > 0) {
         const updatedHearts = userData.userHearts - 1;
@@ -127,9 +126,17 @@ const ReadingPage = () => {
           userId: user?.id,
           hearts: updatedHearts,
         });
+
+        setUserData(prev => prev ? { ...prev, userHearts: updatedHearts } : prev);
+        
+        // Check if hearts are 0 and redirect to shop if no subscription
+        if (updatedHearts === 0 && !userData.subscription) {
+          router.push("/shop");
+        }
       }
     }
-  
+
+    // If all answers are correct, update score and save progress in MongoDB
     if (allAnswersCorrect) {
       const updatedScore = userData.userExp + exercise.point;
       await axios.put('/api/user', {
@@ -137,13 +144,12 @@ const ReadingPage = () => {
         score: updatedScore,
         completedReadingUUID: exercise.uuid,
       });
-  
+
       setUserData(prev => prev ? { ...prev, userExp: updatedScore } : prev);
     } else {
       console.log("Some answers are incorrect, no points awarded.");
     }
   };
-  
 
   const handleContinue = () => {
     router.push("/listening");
