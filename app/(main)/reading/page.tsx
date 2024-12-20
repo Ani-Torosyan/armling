@@ -4,7 +4,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
@@ -168,7 +168,14 @@ const ReadingPage = () => {
         <Button onClick={handleBackToLearn} size="lg" className="rounded-full mb-4" variant="ghost">
           <img src="back.svg" alt="Back" className="w-4 h-4 mr-2" /> Back to Learn
         </Button>
-        <div className="text-xl mb-4 text-justify">{exercise?.passage}</div>
+        <div className="text-l mb-4 text-justify">
+        {exercise?.passage?.split('\n').map((line, index) => (
+          <React.Fragment key={index}>
+            {line}
+            <br />
+          </React.Fragment>
+        ))}
+        </div>
 
         <div className="w-full flex flex-col items-center">
           <h3 className="font-medium mb-4">{exercise?.task}</h3>
