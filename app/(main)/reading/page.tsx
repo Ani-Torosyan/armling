@@ -150,7 +150,7 @@ const ReadingPage = () => {
   const handleBackToLearn = () => router.push("/learn");
 
   if (loading) return <Loading />;
-  if (!userData) return <div>No user data available</div>;
+  if (!userData) return <div className="text-center text-customDark">Something went wrong. Please reload the page.</div>;
 
   return (
     <div className="flex flex-row-reverse gap-[48px] px-6">

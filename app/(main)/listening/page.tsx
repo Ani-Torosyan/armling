@@ -141,7 +141,7 @@ const ListeningPage = () => {
   };
 
   if (loading) return <Loading/>;
-  if (!exercise) return <div>No exercise data available</div>;
+  if (!exercise) return <div className="flex center">Something went wrong. Please reload the page.</div>;
 
   const handleBack = () => {
     router.push("/learn");
