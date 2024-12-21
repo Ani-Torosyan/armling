@@ -20,6 +20,7 @@ interface ReadingExercise {
   point: string;
   title: string;
   question: string[];
+  text: string;
   group: string;
   uuid: string
 }
@@ -75,12 +76,12 @@ const ReadingPage = () => {
     fetchUserData();
   }, [user]);
 
-  const handleAnswerSubmit = async (index: number, optionIndex: number) => {
-    if (!exercise) return;
+  const handleAnswerSelect = async (index: number) => {
+    if (hasAnsweredCorrectly) return;
 
-    setUserAnswer(optionIndex);
+    setUserAnswer(index);
 
-    if (optionIndex === exercise.correct) {
+    if (index === exercise?.correct) {
         if (hearts == 0 && sub == false) {
             router.push("/shop");
             return;
@@ -153,5 +154,56 @@ const ReadingPage = () => {
         <div className="my-4 p-4 rounded-md text-customDark">
           <h2 className="text-xl mb-4">{exercise.title}</h2>
 
+          <div className="mb-4">
+            <p>{exercise.text}</p>
+          </div>
+
           <div className="text-customDark">
             <h3 className="font-medium mb-4">{exercise.task}</h3>
+            <div className="flex justify-center gap-4">
+              {exercise.question.map((option, index) => (
+                <Button
+                  key={index}
+                  variant={
+                    userAnswer === index
+                      ? answerStatus === "correct"
+                        ? "correct"
+                        : "danger"
+                      : "default"
+                  }
+                  onClick={() => handleAnswerSelect(index)}
+                  disabled={hasAnsweredCorrectly}
+                >
+                  {option}
+                </Button>
+              ))}
+            </div>
+
+            {userAnswer !== null && (
+              <div
+                className={`mt-4 text-center text-xl font-semibold ${
+                  answerStatus === "correct" ? "text-green-500" : "text-red-500"
+                }`}
+              >
+                {answerStatus === "correct" ? "Correct!" : "Incorrect. Try again!"}
+              </div>
+            )}
+          </div>
+
+          {hasAnsweredCorrectly && (
+            <div className="mt-6 text-center">
+              <Button variant="primary" onClick={handleContinue}> Continue </Button>
+            </div>
+          )}
+        </div>
+      </FeedWrapper>
+
+      <StickyWrapper>
+        <UserProgress hearts={hearts} points={score} hasActiveSubscription={sub} />
+        {sub === false && <Promo />}
+      </StickyWrapper>
+    </div>
+  );
+};
+
+export default ReadingPage;
