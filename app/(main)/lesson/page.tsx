@@ -6,9 +6,7 @@ import { useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { FeedWrapper } from "@/components/feed-wrapper";
 import { Header } from "../header";
-import { StickyWrapper } from "@/components/sticky-wrapper";
 import { Button } from "@/components/ui/button";
-import { Promo } from "@/components/promo";
 import Loading from "../loading";
 
 interface LessonUnit {
@@ -82,8 +80,6 @@ const LessonPage = () => {
 
   const handleExerciseClick = async (exercise: LessonExercise) => {
     if (!userData || !lessonUnits.length) return;
-
-    const lessonUUID = lessonUnits[0]?.uuid;
 
     const audio = new Audio(exercise.audio);
     audio.play();
