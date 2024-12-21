@@ -88,7 +88,7 @@ const ShopPage = () => {
     if (loading) return <Loading/>
 
     if (!userData) {
-        return <div>No user data available</div>;
+        return <div className="text-center text-customDark">Something went wrong. Please reload the page.</div>;
     }
 
     return (

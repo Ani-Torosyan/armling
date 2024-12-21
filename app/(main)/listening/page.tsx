@@ -77,15 +77,17 @@ const ListeningPage = () => {
   }, [user]);
 
   const handleAnswerSelect = async (index: number) => {
+
+    if (hearts == 0 && sub == false) {
+      router.push("/shop");
+      return;
+    }
+
     if (hasAnsweredCorrectly) return;
 
     setUserAnswer(index);
 
     if (index === exercise?.correct) {
-        if (hearts == 0 && sub == false) {
-            router.push("/shop");
-            return;
-        }
 
         setAnswerStatus("correct");
         let isAlreadyCompleted = false;
@@ -139,7 +141,7 @@ const ListeningPage = () => {
   };
 
   if (loading) return <Loading/>;
-  if (!exercise) return <div>No exercise data available</div>;
+  if (!exercise) return <div className="flex center">Something went wrong. Please reload the page.</div>;
 
   const handleBack = () => {
     router.push("/learn");
