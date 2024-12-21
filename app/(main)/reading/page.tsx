@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -134,6 +133,14 @@ const ReadingPage = () => {
       }
     } else {
       console.log("Some answers are incorrect, no points awarded.");
+      try {
+        await axios.put("/api/decrement-hearts", {
+          userId: user?.id,
+        });
+        setUserData((prev) => prev && { ...prev, userHearts: Math.max(0, prev.userHearts - 1) });
+      } catch (error) {
+        console.error("Error updating user hearts:", error);
+      }
     }
   };
   
