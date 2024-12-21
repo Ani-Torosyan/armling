@@ -77,15 +77,17 @@ const ListeningPage = () => {
   }, [user]);
 
   const handleAnswerSelect = async (index: number) => {
+
+    if (hearts == 0 && sub == false) {
+      router.push("/shop");
+      return;
+    }
+
     if (hasAnsweredCorrectly) return;
 
     setUserAnswer(index);
 
     if (index === exercise?.correct) {
-        if (hearts == 0 && sub == false) {
-            router.push("/shop");
-            return;
-        }
 
         setAnswerStatus("correct");
         let isAlreadyCompleted = false;
