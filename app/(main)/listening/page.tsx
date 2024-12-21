@@ -77,17 +77,15 @@ const ListeningPage = () => {
   }, [user]);
 
   const handleAnswerSelect = async (index: number) => {
-
-    if (hearts == 0 && sub == false) {
-      router.push("/shop");
-      return;
-    }
-
     if (hasAnsweredCorrectly) return;
 
     setUserAnswer(index);
 
     if (index === exercise?.correct) {
+        if (hearts == 0 && sub == false) {
+            router.push("/shop");
+            return;
+        }
 
         setAnswerStatus("correct");
         let isAlreadyCompleted = false;
@@ -126,9 +124,8 @@ const ListeningPage = () => {
         setHearts((prevHearts) => Math.max(0, prevHearts - 1));
 
         try {
-            await axios.put("/api/user", {
+            await axios.put("/api/decrement-hearts", {
                 userId: user?.id,
-                hearts: Math.max(0, hearts - 1),
             });
         } catch (error) {
             console.error("Error updating user hearts:", error);
@@ -141,7 +138,7 @@ const ListeningPage = () => {
   };
 
   if (loading) return <Loading/>;
-  if (!exercise) return <div className="flex center">Something went wrong. Please reload the page.</div>;
+  if (!exercise) return <div>No exercise data available</div>;
 
   const handleBack = () => {
     router.push("/learn");
