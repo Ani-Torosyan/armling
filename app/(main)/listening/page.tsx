@@ -1,5 +1,3 @@
-//TODO: update hearts in db
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -127,8 +125,7 @@ const ListeningPage = () => {
         setAnswerStatus("incorrect");
         setHearts((prevHearts) => Math.max(0, prevHearts - 1));
     }
-};
-
+  };
 
   const handleContinue = () => {
     router.push("/speaking");
@@ -148,7 +145,6 @@ const ListeningPage = () => {
         <div className="space-y-4" />
 
         <div className="text-left mb-4">
-          
           <Button onClick={handleBack} size="lg" className="rounded-full" variant={"ghost"}>
             <img src="back.svg" alt="Back" className="w-4 h-4 mr-2" />
             Back to Learn
