@@ -1,8 +1,9 @@
+
 "use client";
 
-import { useState, useEffect } from "react";
-import axios from "axios"; 
-import { useClerk } from "@clerk/nextjs"; 
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { FeedWrapper } from "@/components/feed-wrapper";
 import { Header } from "../header";
@@ -12,196 +13,232 @@ import { Button } from "@/components/ui/button";
 import Loading from "../loading";
 import { Promo } from "@/components/promo";
 
+interface Question {
+  question: string;
+  options: string[];
+  correctAnswer: string;
+}
+
 interface ReadingExercise {
   _id: string;
   task: string;
   correct: number;
   exerciseType: string;
-  point: string;
-  title: string;
-  question: string[];
-  text: string;
+  point: number;
+  passage: string;
+  questions: Question[];
   group: string;
-  uuid: string
+  uuid: string;
 }
 
+type User = {
+  userExp: number;
+  userHearts: number;
+  subscription: boolean;
+  completedReadingExercises: string[];
+};
+
 const ReadingPage = () => {
-  const { user } = useClerk(); 
+  const { user } = useClerk();
   const router = useRouter();
 
   const [exercise, setExercise] = useState<ReadingExercise | null>(null);
   const [loading, setLoading] = useState(true);
-  const [userAnswer, setUserAnswer] = useState<number | null>(null);
-  const [answerStatus, setAnswerStatus] = useState<"correct" | "incorrect" | null>(null);
-  const [score, setScore] = useState(0);
-  const [hearts, setHearts] = useState(5);
-  const [sub, setSub] = useState(false);
-  const [hasAnsweredCorrectly, setHasAnsweredCorrectly] = useState(false);
+  const [userAnswers, setUserAnswers] = useState<(number | null)[]>([]);
+  const [answerStatuses, setAnswerStatuses] = useState<("correct" | "incorrect" | null)[]>([]);
+  const [userData, setUserData] = useState<User | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+  const [allCorrect, setAllCorrect] = useState(false);
 
   useEffect(() => {
     const fetchExercise = async () => {
       try {
-        const response = await fetch("/api/reading");
-        if (response.ok) {
-          const data = await response.json();
-          setExercise(data.ReadingExercise[0]);
-        } else {
-          console.error("Failed to fetch exercise data");
-        }
+        const { data } = await axios.get("/api/reading");
+        setExercise(data[0]);
       } catch (error) {
-        console.error("Error fetching exercise data:", error);
+        console.error("Error fetching exercise:", error);
       } finally {
         setLoading(false);
       }
     };
 
+    fetchExercise();
+  }, []);
+
+  useEffect(() => {
     const fetchUserData = async () => {
       if (!user?.id) return;
       try {
         const response = await fetch(`/api/user?userId=${user.id}`);
         if (response.ok) {
-          const data = await response.json();
-          setHearts(data.userHearts || 5); 
-          setScore(data.userExp || 0); 
-          setSub(data.subscription || false)
+          setUserData(await response.json());
         } else {
           console.error("Error fetching user data");
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchExercise();
     fetchUserData();
   }, [user]);
 
-  const handleAnswerSelect = async (index: number) => {
-    if (hasAnsweredCorrectly) return;
+  const handleAnswerSubmit = (index: number, optionIndex: number) => {
+    if (!exercise) return;
 
-    setUserAnswer(index);
+    setUserAnswers((prev) => {
+      const updated = [...prev];
+      updated[index] = optionIndex;
+      return updated;
+    });
+  };
 
-    if (index === exercise?.correct) {
-        if (hearts == 0 && sub == false) {
-            router.push("/shop");
-            return;
-        }
+  const setStatus = () => {
+    const statuses = exercise?.questions.map((q, index) => {
+      const userAnswer = userAnswers[index];
+      if (userAnswer == null || userAnswer === undefined) return "incorrect";  
+      const option = q.options[userAnswer];
+      if (!option) return "incorrect";  
+      const isCorrect = option.trim().toLowerCase() === q.correctAnswer.trim().toLowerCase();
+      return isCorrect ? "correct" : "incorrect";
+    }) || [];
 
-        setAnswerStatus("correct");
-        let isAlreadyCompleted = false;
+    setAnswerStatuses(statuses);
+  };
 
-        try {
-            const userDataResponse = await axios.get(`/api/user?userId=${user?.id}`);
-            if (userDataResponse.status === 200) {
-                const userData = userDataResponse.data;
-                isAlreadyCompleted = userData.completedReadingExercises?.includes(exercise.uuid);
-            }
-        } catch (error) {
-            console.error("Error fetching user data to check completed exercises:", error);
-        }
-
-        if (isAlreadyCompleted) {
-            setAnswerStatus("correct");
-            setHasAnsweredCorrectly(true);
-            return; 
-        }
-
-        const newScore = score + parseInt(exercise.point, 10);
-        if(!isAlreadyCompleted) setScore(newScore);
-        setHasAnsweredCorrectly(true);
-
-        try {
-            await axios.put("/api/user", {
-                userId: user?.id,
-                score: newScore,
-                completedReadingUUID: exercise.uuid, 
-            });
-        } catch (error) {
-            console.error("Error updating user experience:", error);
-        }
-    } else if (answerStatus !== "correct" && hearts == 0 && sub == false) {
-        router.push("/shop");
+  const handleSubmitAllAnswers = async () => {
+    if (userData?.userHearts == 0 && userData.subscription == false) {
+      router.push("/shop");
+      return;
+    }
+  
+    if (!exercise || !userData) return;
+  
+    setStatus();
+    setSubmitted(true);
+  
+    if(!answerStatuses.includes("incorrect")){ setAllCorrect(true) }
+  
+    if (allCorrect) {
+      if (!userData.completedReadingExercises.includes(exercise.uuid)) {
+        const updatedScore = userData.userExp + exercise.point;
+        await axios.put('/api/user', {
+          userId: user?.id,
+          score: updatedScore,
+          completedReadingUUID: exercise.uuid,
+        });
+  
+        setUserData(prev => prev ? { ...prev, userExp: updatedScore } : prev);
+      }
     } else {
-        setAnswerStatus("incorrect");
-        setHearts((prevHearts) => Math.max(0, prevHearts - 1));
+      console.log("Some answers are incorrect, no points awarded.");
     }
   };
+  
 
   const handleContinue = () => {
-    router.push("/speaking");
+    router.push("/listening");
   };
 
-  if (loading) return <Loading/>;
-  if (!exercise) return <div>No exercise data available</div>;
-
-  const handleBack = () => {
-    router.push("/learn");
+  const handleRetry = () => {
+    setUserAnswers((prev) => prev.map((answer, idx) => (answerStatuses[idx] === "incorrect" ? null : answer)));
+    setAnswerStatuses((prev) => prev.map((status) => (status === "incorrect" ? null : status)));
+    setSubmitted(false);
   };
+
+  const handleBackToLearn = () => router.push("/learn");
+
+  if (loading) return <Loading />;
+  if (!userData) return <div>No user data available</div>;
 
   return (
-    <div className="flex gap-[48px] px-6">
+    <div className="flex flex-row-reverse gap-[48px] px-6">
+      <StickyWrapper>
+        <UserProgress
+          hearts={userData.userHearts}
+          points={userData.userExp}
+          hasActiveSubscription={userData.subscription}
+        />
+        {!userData.subscription && <Promo />}
+      </StickyWrapper>
+
       <FeedWrapper>
         <Header title="Reading Exercise" />
-        <div className="space-y-4" />
-
-        <div className="text-left mb-4">
-          <Button onClick={handleBack} size="lg" className="rounded-full" variant={"ghost"}>
-            <img src="back.svg" alt="Back" className="w-4 h-4 mr-2" />
-            Back to Learn
-          </Button>
+        <Button onClick={handleBackToLearn} size="lg" className="rounded-full mb-4" variant="ghost">
+          <img src="back.svg" alt="Back" className="w-4 h-4 mr-2" /> Back to Learn
+        </Button>
+        <div className="text-l mb-4 text-justify text-customDark">
+        {exercise?.passage?.split('\n').map((line, index) => (
+          <React.Fragment key={index}>
+            {line}
+            <br />
+          </React.Fragment>
+        ))}
         </div>
 
-        <div className="my-4 p-4 rounded-md text-customDark">
-          <h2 className="text-xl mb-4">{exercise.title}</h2>
-
-          <div className="mb-4">
-            <p>{exercise.text}</p>
-          </div>
-
-          <div className="text-customDark">
-            <h3 className="font-medium mb-4">{exercise.task}</h3>
-            <div className="flex justify-center gap-4">
-              {exercise.question.map((option, index) => (
-                <Button
-                  key={index}
-                  variant={
-                    userAnswer === index
-                      ? answerStatus === "correct"
-                        ? "correct"
-                        : "danger"
-                      : "default"
-                  }
-                  onClick={() => handleAnswerSelect(index)}
-                  disabled={hasAnsweredCorrectly}
-                >
-                  {option}
-                </Button>
-              ))}
-            </div>
-
-            {userAnswer !== null && (
-              <div
-                className={`mt-4 text-center text-xl font-semibold ${
-                  answerStatus === "correct" ? "text-green-500" : "text-red-500"
-                }`}
-              >
-                {answerStatus === "correct" ? "Correct!" : "Incorrect. Try again!"}
+        <div className="w-full flex flex-col items-center text-customDark">
+          <h3 className="font-medium mb-4">{exercise?.task}</h3>
+          {exercise?.questions.map((q, index) => (
+            <div key={index} className="my-2">
+              <p className="text-center mb-2">{q.question}</p>
+              <div className="flex justify-center items-center space-x-4">
+                {q.options.map((option, i) => (
+                  <Button
+                    variant={
+                      userAnswers[index] === i
+                        ? submitted
+                          ? answerStatuses[index] === "correct"
+                            ? "correct" 
+                            : "danger" 
+                          : "secondary"
+                        : "default"
+                    }
+                    key={i}
+                    onClick={() => handleAnswerSubmit(index, i)}
+                    className={`${
+                      submitted
+                        ? answerStatuses[index] !== null && userAnswers[index] === i
+                          ? answerStatuses[index] === "correct"
+                            ? "bg-green-500" 
+                            : "bg-red-500"   
+                          : ""
+                        : ""
+                    }`}
+                    disabled={submitted}
+                  >
+                    {option}
+                  </Button>  
+                ))}
               </div>
-            )}
-          </div>
-
-          {hasAnsweredCorrectly && (
-            <div className="mt-6 text-center">
-              <Button variant="primary" onClick={handleContinue}> Continue </Button>
+              {submitted && userAnswers[index] !== null && (
+                <p className={`mt-2 text-center ${answerStatuses[index] === "correct" ? "text-green-500" : "text-red-500"}`}>
+                  {answerStatuses[index] === "correct" ? "Ճիշտ է!" : "Սխալ է. Փորձեք նորից!"}
+                </p>
+              )}
             </div>
+          ))}
+
+          {!submitted && (
+            <Button variant="primary" onClick={handleSubmitAllAnswers} className="mt-6">
+              Submit
+            </Button>
+          )}
+
+          {submitted && answerStatuses.includes("incorrect") && (
+            <Button variant="primary" onClick={handleRetry} className="mt-6">
+              Try Again
+            </Button>
+          )}
+
+          {submitted && !answerStatuses.includes("incorrect") && (
+            <Button variant="primary" onClick={handleContinue} className="mt-6">
+              Continue
+            </Button>
           )}
         </div>
       </FeedWrapper>
-
-      <StickyWrapper>
-        <UserProgress hearts={hearts} points={score} hasActiveSubscription={sub} />
-        {sub === false && <Promo />}
-      </StickyWrapper>
     </div>
   );
 };
