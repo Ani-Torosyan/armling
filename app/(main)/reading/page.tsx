@@ -167,7 +167,7 @@ const ReadingPage = () => {
         <Button onClick={handleBackToLearn} size="lg" className="rounded-full mb-4" variant="ghost">
           <img src="back.svg" alt="Back" className="w-4 h-4 mr-2" /> Back to Learn
         </Button>
-        <div className="text-l mb-4 text-justify">
+        <div className="text-l mb-4 text-justify text-customDark">
         {exercise?.passage?.split('\n').map((line, index) => (
           <React.Fragment key={index}>
             {line}
@@ -176,7 +176,7 @@ const ReadingPage = () => {
         ))}
         </div>
 
-        <div className="w-full flex flex-col items-center">
+        <div className="w-full flex flex-col items-center text-customDark">
           <h3 className="font-medium mb-4">{exercise?.task}</h3>
           {exercise?.questions.map((q, index) => (
             <div key={index} className="my-2">

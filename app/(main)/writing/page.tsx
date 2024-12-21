@@ -129,7 +129,7 @@ const WritingPage = () => {
         <div className="w-full flex flex-col">
             <div className="my-4">
             <h3 className="font-semibold flex justify-center text-customDark">{exercise.title}</h3>
-            <p className="mt-2 text-customShade flex justify-center">{exercise.task}</p>
+            <p className="mt-2 text-customDark flex justify-center">{exercise.task}</p>
             <div className="mt-4 flex justify-center">
               <textarea
                 placeholder="Type your answer here"

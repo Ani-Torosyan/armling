@@ -92,29 +92,6 @@ const LessonPage = () => {
       setClickedExercise({ id: exercise._id, isCorrect: true });
       setFeedbackMessage("Ճիշտ է!");
       setFeedbackColor("text-green-500"); 
-
-      try {
-        const response = await axios.put("/api/user", {
-          userId: user?.id,
-          completedLessonUUID: lessonUUID, 
-        });
-
-        if (response.status === 200) {
-          setUserData((prev) => {
-            if (!prev) return null;
-            return {
-              ...prev,
-              lesson: Array.isArray(prev.lesson)
-                ? [...prev.lesson, lessonUUID] 
-                : [lessonUUID],
-            };
-          });
-        } else {
-          console.error("Failed to update user in the backend:", response.statusText);
-        }
-      } catch (error) {
-        console.error("Error updating user:", error);
-      }
     } else {
       setClickedExercise({ id: exercise._id, isCorrect: false });
       setFeedbackMessage("Սխալ է. Փորձեք նորից."); 
@@ -156,7 +133,7 @@ const LessonPage = () => {
             {lessonUnits.map((unit) => (
               <div key={unit._id} className="my-4 p-4 text-customDark">
                 <h3 className="text-xl font-semibold">{unit.title}</h3>
-                <p className="text-customShade">{unit.question}</p>
+                <p className="text-customDark text-l">{unit.question}</p>
               </div>
             ))}
 
@@ -180,7 +157,7 @@ const LessonPage = () => {
                     className={`w-full h-48 flex items-center justify-center bg-cover bg-center ${clickedExercise.isCorrect ? 'opacity-50' : ''}`}
                     style={{
                       backgroundImage: `url(${exercise.picture})`,
-                      backgroundSize: "70%",
+                      backgroundSize: "50%",
                       backgroundPosition: "center",
                       backgroundRepeat: "no-repeat",
                     }}
@@ -210,10 +187,6 @@ const LessonPage = () => {
           </div>
         )}
       </FeedWrapper>
-
-      <StickyWrapper>
-        {!userData.subscription && <Promo />}
-      </StickyWrapper>
     </div>
   );
 };
