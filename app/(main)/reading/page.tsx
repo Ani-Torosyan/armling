@@ -1,6 +1,3 @@
-//TODO: Update hearts after making mistake
-//TODO: For every question get a point 
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -37,6 +34,7 @@ type User = {
   userExp: number;
   userHearts: number;
   subscription: boolean;
+  completedReadingExercises: string[];
 };
 
 const ReadingPage = () => {
@@ -122,14 +120,17 @@ const ReadingPage = () => {
     const allAnswersCorrect = answerStatuses.every(status => status === "correct");
   
     if (allAnswersCorrect) {
-      const updatedScore = userData.userExp + exercise.point;
-      await axios.put('/api/user', {
-        userId: user?.id,
-        score: updatedScore,
-        completedReadingUUID: exercise.uuid,
-      });
+      // Check if the reading exercise UUID is already completed
+      if (!userData.completedReadingExercises.includes(exercise.uuid)) {
+        const updatedScore = userData.userExp + exercise.point;
+        await axios.put('/api/user', {
+          userId: user?.id,
+          score: updatedScore,
+          completedReadingUUID: exercise.uuid,
+        });
   
-      setUserData(prev => prev ? { ...prev, userExp: updatedScore } : prev);
+        setUserData(prev => prev ? { ...prev, userExp: updatedScore } : prev);
+      }
     } else {
       console.log("Some answers are incorrect, no points awarded.");
     }
