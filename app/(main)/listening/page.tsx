@@ -1,3 +1,5 @@
+//TODO: update hearts in db
+
 "use client";
 
 import { useState, useEffect } from "react";

@@ -1,3 +1,5 @@
+//TODO: update hearts in db
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -47,6 +49,7 @@ const ReadingPage = () => {
   const [answerStatuses, setAnswerStatuses] = useState<("correct" | "incorrect" | null)[]>([]);
   const [userData, setUserData] = useState<User | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [allCorrect, setAllCorrect] = useState(false);
 
   useEffect(() => {
     const fetchExercise = async () => {
@@ -117,10 +120,9 @@ const ReadingPage = () => {
     setStatus();
     setSubmitted(true);
   
-    const allAnswersCorrect = answerStatuses.every(status => status === "correct");
+    if(!answerStatuses.includes("incorrect")){ setAllCorrect(true) }
   
-    if (allAnswersCorrect) {
-      // Check if the reading exercise UUID is already completed
+    if (allCorrect) {
       if (!userData.completedReadingExercises.includes(exercise.uuid)) {
         const updatedScore = userData.userExp + exercise.point;
         await axios.put('/api/user', {
