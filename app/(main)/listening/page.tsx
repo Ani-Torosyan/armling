@@ -103,27 +103,34 @@ const ListeningPage = () => {
         if (isAlreadyCompleted) {
             setAnswerStatus("correct");
             setHasAnsweredCorrectly(true);
-            return; 
+            return;
         }
 
         const newScore = score + parseInt(exercise.point, 10);
-        if(!isAlreadyCompleted) setScore(newScore);
+        if (!isAlreadyCompleted) setScore(newScore);
         setHasAnsweredCorrectly(true);
 
         try {
             await axios.put("/api/user", {
                 userId: user?.id,
                 score: newScore,
-                completedListeningUUID: exercise.uuid, 
+                completedListeningUUID: exercise.uuid,
             });
         } catch (error) {
             console.error("Error updating user experience:", error);
         }
-    } else if (answerStatus !== "correct" && hearts == 0 && sub == false) {
-        router.push("/shop");
     } else {
         setAnswerStatus("incorrect");
         setHearts((prevHearts) => Math.max(0, prevHearts - 1));
+
+        try {
+            await axios.put("/api/user", {
+                userId: user?.id,
+                hearts: Math.max(0, hearts - 1),
+            });
+        } catch (error) {
+            console.error("Error updating user hearts:", error);
+        }
     }
   };
 
