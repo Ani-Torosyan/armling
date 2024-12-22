@@ -47,7 +47,6 @@ const ReadingPage = () => {
   const [answerStatuses, setAnswerStatuses] = useState<("correct" | "incorrect" | null)[]>([]);
   const [userData, setUserData] = useState<User | null>(null);
   const [submitted, setSubmitted] = useState(false);
-  const [allCorrect, setAllCorrect] = useState(false);
 
   useEffect(() => {
     const fetchExercise = async () => {
@@ -116,7 +115,6 @@ const ReadingPage = () => {
     setSubmitted(true);
   
     const allCorrectNow = statuses.every(status => status === "correct");
-    setAllCorrect(allCorrectNow); 
   
     if (allCorrectNow) {
       if (!userData.completedReadingExercises.includes(exercise.uuid)) {
