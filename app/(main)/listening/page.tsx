@@ -61,9 +61,9 @@ const ListeningPage = () => {
         const response = await fetch(`/api/user?userId=${user.id}`);
         if (response.ok) {
           const data = await response.json();
-          setHearts(data.userHearts || 5); 
-          setScore(data.userExp || 0); 
-          setSub(data.subscription || false)
+          setHearts(data.userHearts); 
+          setScore(data.userExp); 
+          setSub(data.subscription)
         } else {
           console.error("Error fetching user data");
         }
@@ -77,16 +77,16 @@ const ListeningPage = () => {
   }, [user]);
 
   const handleAnswerSelect = async (index: number) => {
+    if (hearts == 0 && sub == false) {
+      router.push("/shop");
+      return;
+  }
+  
     if (hasAnsweredCorrectly) return;
 
     setUserAnswer(index);
 
     if (index === exercise?.correct) {
-        if (hearts == 0 && sub == false) {
-            router.push("/shop");
-            return;
-        }
-
         setAnswerStatus("correct");
         let isAlreadyCompleted = false;
 

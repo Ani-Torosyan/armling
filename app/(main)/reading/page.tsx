@@ -94,42 +94,46 @@ const ReadingPage = () => {
     });
   };
 
-  const setStatus = () => {
-    const statuses = exercise?.questions.map((q, index) => {
-      const userAnswer = userAnswers[index];
-      if (userAnswer == null || userAnswer === undefined) return "incorrect";  
-      const option = q.options[userAnswer];
-      if (!option) return "incorrect";  
-      const isCorrect = option.trim().toLowerCase() === q.correctAnswer.trim().toLowerCase();
-      return isCorrect ? "correct" : "incorrect";
-    }) || [];
-
-    setAnswerStatuses(statuses);
-  };
-
   const handleSubmitAllAnswers = async () => {
-    if (userData?.userHearts == 0 && userData.subscription == false) {
+    if (userData?.userHearts === 0 && userData.subscription === false) {
       router.push("/shop");
       return;
     }
   
     if (!exercise || !userData) return;
   
-    setStatus();
+    const statuses = exercise.questions.map((q, index) => {
+      const userAnswer = userAnswers[index];
+      if (userAnswer == null || userAnswer === undefined) return "incorrect";
+      const option = q.options[userAnswer];
+      if (!option) return "incorrect";
+      return option.trim().toLowerCase() === q.correctAnswer.trim().toLowerCase()
+        ? "correct"
+        : "incorrect";
+    });
+  
+    setAnswerStatuses(statuses); 
     setSubmitted(true);
   
-    if(!answerStatuses.includes("incorrect")){ setAllCorrect(true) }
+    const allCorrectNow = statuses.every(status => status === "correct");
+    setAllCorrect(allCorrectNow); 
   
-    if (allCorrect) {
+    if (allCorrectNow) {
       if (!userData.completedReadingExercises.includes(exercise.uuid)) {
         const updatedScore = userData.userExp + exercise.point;
-        await axios.put('/api/user', {
-          userId: user?.id,
-          score: updatedScore,
-          completedReadingUUID: exercise.uuid,
-        });
+        try {
+          await axios.put("/api/user", {
+            userId: user?.id,
+            score: updatedScore,
+            completedReadingUUID: exercise.uuid,
+          });
   
-        setUserData(prev => prev ? { ...prev, userExp: updatedScore } : prev);
+          setUserData(prev =>
+            prev ? { ...prev, userExp: updatedScore } : prev
+          );
+        } catch (error) {
+          console.error("Error updating user score:", error);
+        }
       }
     } else {
       console.log("Some answers are incorrect, no points awarded.");
@@ -137,13 +141,14 @@ const ReadingPage = () => {
         await axios.put("/api/decrement-hearts", {
           userId: user?.id,
         });
-        setUserData((prev) => prev && { ...prev, userHearts: Math.max(0, prev.userHearts - 1) });
+        setUserData(prev =>
+          prev ? { ...prev, userHearts: Math.max(0, prev.userHearts - 1) } : prev
+        );
       } catch (error) {
         console.error("Error updating user hearts:", error);
       }
     }
-  };
-  
+  }; 
 
   const handleContinue = () => {
     router.push("/listening");
