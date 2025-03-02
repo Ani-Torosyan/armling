@@ -61,13 +61,23 @@ const ShopPage = () => {
             const newHearts = Math.min(userData.userHearts + heartsToAdd, 5);
             setUserData((prev) => prev && { ...prev, userHearts: newHearts });
     
-            const newLastUpdate = new Date(lastUpdate + heartsToAdd * 300 * 1000);
+            const newLastUpdate = new Date(lastUpdate + heartsToAdd * 300 * 1000).toISOString();
             setUserData((prev) =>
-                prev && { ...prev, lastHeartUpdate: newLastUpdate.toISOString() }
+                prev && { ...prev, lastHeartUpdate: newLastUpdate }
             );
     
             try {
-                const response = await fetch('/api/heart-refill');
+                const response = await fetch('/api/heart-refill', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userId: user?.id,
+                        newHearts,
+                        newLastUpdate,
+                    }),
+                });
                 if (!response.ok) {
                     console.error('Failed to call heart refill API');
                 }
