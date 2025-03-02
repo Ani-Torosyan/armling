@@ -87,7 +87,7 @@ const ShopPage = () => {
         }
     
         const nextRefillTime = 300 - (timeElapsed % 300);
-        setTime(nextRefillTime);
+        setTime(isNaN(nextRefillTime) ? 0 : nextRefillTime);
     };
     
     useEffect(() => {
