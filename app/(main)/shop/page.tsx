@@ -109,7 +109,7 @@ const ShopPage = () => {
             <FeedWrapper>
                 <Header title="Shop" />
                 <div className="w-full flex flex-col items-center">
-                    <Items hearts={userData.userHearts} time={userData.userHearts < 5 ? time : "FULL"} sub={userData.subscription} />
+                    <Items hearts={userData.userHearts} time={userData.userHearts < 5 ? time : 0} sub={userData.subscription} />
                 </div>
             </FeedWrapper>
         </div>
