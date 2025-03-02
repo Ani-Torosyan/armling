@@ -7,7 +7,7 @@ import { useClerk } from "@clerk/nextjs";
 
 type Props = {
     hearts: number;
-    time: number;
+    time: string | number;
     sub: boolean;
 };
 
@@ -38,6 +38,12 @@ export const Items = ({ hearts, time, sub }: Props) => {
         }
     };
 
+    const formatTime = (seconds: number) => {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    };
+
     return (
         <ul className="w-full">
             <div className="flex items-center w-full p-4 gap-x-4">
@@ -47,11 +53,10 @@ export const Items = ({ hearts, time, sub }: Props) => {
                         Refill hearts
                     </p>
                 </div>
-                <Button variant="ghost" disabled={hearts === 5 || time > 0}>
+                <Button variant="ghost" disabled={hearts === 5 || typeof time === 'number' && time > 0}>
                     {hearts === 5 || isSubscribed ? "full" : (
                         <p>
-                            {`${Math.floor(time / 60)}`.padStart(2, "0")}:
-                            {`${time % 60}`.padStart(2, "0")}
+                            {typeof time === 'number' ? formatTime(time) : time}
                         </p>
                     )}
                 </Button>
@@ -63,9 +68,7 @@ export const Items = ({ hearts, time, sub }: Props) => {
                         Unlimited hearts
                     </p>
                 </div>
-                <Button disabled={isSubscribed} onClick={() => {
-                    handleUpgrade()
-                }}>
+                <Button disabled={isSubscribed} onClick={handleUpgrade}>
                     {isSubscribed ? "active" : "upgrade"}
                 </Button>
             </div>
