@@ -91,6 +91,12 @@ const ShopPage = () => {
         return <div className="text-center text-customDark">Something went wrong. Please reload the page.</div>;
     }
 
+    const formatTime = (seconds: number) => {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    };
+
     return (
         <div className="flex flex-row-reverse gap-[48px] px-6">
             <StickyWrapper>
@@ -103,7 +109,7 @@ const ShopPage = () => {
             <FeedWrapper>
                 <Header title="Shop" />
                 <div className="w-full flex flex-col items-center">
-                    <Items hearts={userData.userHearts} time={time} sub={userData.subscription} />
+                    <Items hearts={userData.userHearts} time={userData.userHearts < 5 ? formatTime(time) : "FULL"} sub={userData.subscription} />
                 </div>
             </FeedWrapper>
         </div>
