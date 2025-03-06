@@ -61,13 +61,23 @@ const ShopPage = () => {
             const newHearts = Math.min(userData.userHearts + heartsToAdd, 5);
             setUserData((prev) => prev && { ...prev, userHearts: newHearts });
     
-            const newLastUpdate = new Date(lastUpdate + heartsToAdd * 300 * 1000);
+            const newLastUpdate = new Date(lastUpdate + heartsToAdd * 300 * 1000).toISOString();
             setUserData((prev) =>
-                prev && { ...prev, lastHeartUpdate: newLastUpdate.toISOString() }
+                prev && { ...prev, lastHeartUpdate: newLastUpdate }
             );
     
             try {
-                const response = await fetch('/api/heart-refill');
+                const response = await fetch('/api/heart-refill', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userId: user?.id,
+                        newHearts,
+                        newLastUpdate,
+                    }),
+                });
                 if (!response.ok) {
                     console.error('Failed to call heart refill API');
                 }
@@ -77,7 +87,7 @@ const ShopPage = () => {
         }
     
         const nextRefillTime = 300 - (timeElapsed % 300);
-        setTime(nextRefillTime);
+        setTime(isNaN(nextRefillTime) ? 0 : nextRefillTime);
     };
     
     useEffect(() => {
@@ -91,6 +101,12 @@ const ShopPage = () => {
         return <div className="text-center text-customDark">Something went wrong. Please reload the page.</div>;
     }
 
+    const formatTime = (seconds: number) => {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    };
+
     return (
         <div className="flex flex-row-reverse gap-[48px] px-6">
             <StickyWrapper>
@@ -103,7 +119,7 @@ const ShopPage = () => {
             <FeedWrapper>
                 <Header title="Shop" />
                 <div className="w-full flex flex-col items-center">
-                    <Items hearts={userData.userHearts} time={time} sub={userData.subscription} />
+                    <Items hearts={userData.userHearts} time={userData.userHearts < 5 ? time : 0} sub={userData.subscription} />
                 </div>
             </FeedWrapper>
         </div>
