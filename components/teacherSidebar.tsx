@@ -21,8 +21,8 @@ export const TeacherSidebar = ({ className }: Props) => {
                 </div>
             </Link>
             <div className="flex flex-col gap-y-2 flex-1 mt-4">
-                <SidebarItem label="Writing Review" iconSrc="writing.svg" href="/reviews/writing-review" />
-                <SidebarItem label="Speaking Review" iconSrc="speaking.svg" href="/reviews/speaking-review" />
+                <SidebarItem label="Writing Review" iconSrc="/writing.svg" href="/reviews/writing-review" />
+                <SidebarItem label="Speaking Review" iconSrc="/speaking.svg" href="/reviews/speaking-review" />
             </div>
             <div className="p-4">
                 <ClerkLoading>

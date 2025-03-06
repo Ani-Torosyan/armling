@@ -5,9 +5,9 @@ import axios from "axios";
 import { useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { FeedWrapper } from "@/components/feed-wrapper";
-import { Header } from "../header";
+import { Header } from "@/app/(main)/header";
 import { Button } from "@/components/ui/button";
-import Loading from "../loading";
+import Loading from "@/app/(main)/loading";
 
 interface LessonUnit {
   _id: string;
@@ -128,8 +128,8 @@ const LessonPage = () => {
           <div>
             {lessonUnits.map((unit) => (
               <div key={unit._id} className="my-4 p-4 text-customDark">
-                <h3 className="text-xl font-semibold">{unit.title}</h3>
-                <p className="text-customDark text-l">{unit.question}</p>
+                <h3 className="text-xl font-semibold flex flex-col items-center">{unit.title}</h3>
+                <p className="text-customDark text-l flex flex-col items-center">{unit.question}</p>
               </div>
             ))}
 

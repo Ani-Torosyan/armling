@@ -8,8 +8,8 @@ import axios from "axios";
 import { useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { FeedWrapper } from "@/components/feed-wrapper";
-import { Header } from "../header";
-import Loading from "../loading";
+import { Header } from "@/app/(main)/header";
+import Loading from "@/app/(main)/loading";
 import { Button } from "@/components/ui/button";
 
 interface SpeakingExercise {

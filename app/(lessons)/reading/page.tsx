@@ -5,11 +5,11 @@ import axios from "axios";
 import { useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { FeedWrapper } from "@/components/feed-wrapper";
-import { Header } from "../header";
+import { Header } from "@/app/(main)/header";
 import { UserProgress } from "@/components/user-progress";
 import { StickyWrapper } from "@/components/sticky-wrapper";
 import { Button } from "@/components/ui/button";
-import Loading from "../loading";
+import Loading from "@/app/(main)/loading";
 import { Promo } from "@/components/promo";
 
 interface Question {

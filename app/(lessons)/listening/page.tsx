@@ -5,11 +5,11 @@ import axios from "axios";
 import { useClerk } from "@clerk/nextjs"; 
 import { useRouter } from "next/navigation";
 import { FeedWrapper } from "@/components/feed-wrapper";
-import { Header } from "../header";
+import { Header } from "@/app/(main)/header";
 import { UserProgress } from "@/components/user-progress";
 import { StickyWrapper } from "@/components/sticky-wrapper";
 import { Button } from "@/components/ui/button";
-import Loading from "../loading";
+import Loading from "@/app/(main)/loading";
 import { Promo } from "@/components/promo";
 
 interface ListeningExercise {
@@ -158,7 +158,7 @@ const ListeningPage = () => {
         </div>
 
         <div className="my-4 p-4 rounded-md text-customDark">
-          <h2 className="text-xl mb-4">{exercise.title}</h2>
+          
 
           <div className="mb-4">
             <iframe
@@ -171,8 +171,10 @@ const ListeningPage = () => {
             />
           </div>
 
+          <h2 className="text-xl mb-4 flex flex-col items-center">{exercise.title}</h2>
+
           <div className="text-customDark">
-            <h3 className="font-medium mb-4">{exercise.task}</h3>
+            <h3 className="font-medium mb-4 flex flex-col items-center">{exercise.task}</h3>
             <div className="flex justify-center gap-4">
               {exercise.question.map((option, index) => (
                 <Button
