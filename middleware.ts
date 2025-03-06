@@ -1,10 +1,17 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { NextResponse } from 'next/server'
 
-const isPublicRoute = createRouteMatcher(["/", "/api/webhooks", "/api/data"]);
+const isTeacherRoute = createRouteMatcher(['/reviews(.*)'])
+
+const isPublicRoute = createRouteMatcher(["/", "/api/webhooks", "/api/data", "/teachers"]);
 
 export default clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {
     await auth.protect()
+  }
+  if (isTeacherRoute(request) && (await auth()).sessionClaims?.metadata?.role !== 'teacher') {
+    const url = new URL('/teachers?error=not-a-teacher', request.url);
+    return NextResponse.redirect(url);
   }
 })
 

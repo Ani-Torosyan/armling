@@ -28,7 +28,7 @@ export const Header = () => {
                         <div className="flex gap-x-4">
                             <SignInButton>
                                 <Button size="lg" variant="sidebar">
-                                    Login
+                                    Log in
                                 </Button>
                             </SignInButton>
                             <SignUpButton>
