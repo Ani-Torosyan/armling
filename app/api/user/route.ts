@@ -31,62 +31,11 @@ export async function GET(request: Request) {
             completedListeningExercises: user.listening,
             completedSpeakingExercises: user.speaking,
             completedWritingExercises: user.writing,
-            completedLessons: user.lesson
+            completedLessons: user.lesson,
+            lastHeartUpdate: user.lastHeartUpdate, // Include lastHeartUpdate in the response
         });
     } catch (error) {
         console.error('Error fetching user data:', error);
         return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
     }
-}
-
-export async function PUT(request: Request) {
-  try {
-    await connect();
-
-    const body = await request.json();
-    const { userId, score, completedLessonUUID, completedReadingUUID, completedListeningUUID, completedSpeakingUUID } = body;
-
-    if (!userId || score == null) {
-      return NextResponse.json({ message: "User ID and score are required" }, { status: 400 });
-    }
-
-    const user = await User.findOne({ clerkId: userId });
-
-    if (!user) {
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
-    }
-
-    // Update lesson data
-    if (completedLessonUUID && !user.lesson.includes(completedLessonUUID)) {
-      user.lesson.push(completedLessonUUID);
-    }
-
-    // Update reading exercise data
-    if (completedReadingUUID && !user.reading.includes(completedReadingUUID)) {
-      user.reading.push(completedReadingUUID); // Add the UUID to completed reading exercises
-      user.userExp = score; // Update score only when exercise is new
-    }
-
-    // Update listening exercise data
-    if (completedListeningUUID && !user.listening.includes(completedListeningUUID)) {
-      user.listening.push(completedListeningUUID);
-      user.userExp = score;
-    }
-
-    // Update speaking exercise data
-    if (completedSpeakingUUID && !user.speaking.includes(completedSpeakingUUID)) {
-      user.speaking.push(completedSpeakingUUID);
-    }
-
-    await user.save();
-
-    return NextResponse.json({ message: "User experience and exercises updated successfully", user });
-  } catch (error: unknown) {
-    console.error("Error updating user data:", error);
-    if (error instanceof Error) {
-      return NextResponse.json({ message: "Internal Server Error", error: error.message }, { status: 500 });
-    } else {
-      return NextResponse.json({ message: "Internal Server Error", error: "Unknown error occurred" }, { status: 500 });
-    }
-  }
 }

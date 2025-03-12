@@ -50,9 +50,9 @@ const ShopPage = () => {
     }, [user]);
 
     const updateTimer = async () => {
-        const now = Date.now();
         if (!userData) return;
 
+        const now = new Date().getTime();
         const lastUpdate = new Date(userData.lastHeartUpdate).getTime();
         const timeElapsed = Math.floor((now - lastUpdate) / 1000);
         const heartsToAdd = Math.floor(timeElapsed / 300);
@@ -119,6 +119,7 @@ const ShopPage = () => {
             <FeedWrapper>
                 <Header title="Shop" />
                 <div className="w-full flex flex-col items-center">
+                   
                     <Items hearts={userData.userHearts} time={userData.userHearts < 5 ? time : 0} sub={userData.subscription} />
                 </div>
             </FeedWrapper>
