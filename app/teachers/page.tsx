@@ -48,10 +48,13 @@ export default function Home() {
                 </SignInButton>
               </SignedOut>
               <SignedIn>
-                <Button size="lg" variant="secondary" className="w-full" asChild>
+                <Button size="lg" variant="secondary" asChild>
                   <Link href="/reviews/writing-review">I am a teacher</Link>
                 </Button>
               </SignedIn>
+                  <Button size="lg" variant="primaryOutline" type="submit">
+                    <Link href="/">Back to student page</Link>
+                  </Button>
             </ClerkLoaded>
           </div>
         </div>
@@ -63,6 +66,8 @@ export default function Home() {
         </div>
       </div>
 
+      <div className="w-full h-full bg-custom flex flex-col items-center text-center"><p><span className="text-lg font-light italic">P.S. Did you know that khachkar (Armenian cross-stones) are UNESCO-recognized masterpieces?</span></p></div>
+      <div className="h-[2vh] w-full bg-custom"></div>
       <Footer />
     </ClerkProvider>
   );

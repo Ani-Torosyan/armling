@@ -49,24 +49,31 @@ export default function Home() {
         <img src="/about-us.svg" alt="About Us" className="w-2/3 max-w-[400px]" />
         <div className="flex flex-col items-center justify-center">
           <h2 className="text-2xl font-bold">About Us</h2>
+          <div className="h-[2vh]"></div>
           <p className="text-center max-w-[400px]">
             ArmLing is dedicated to helping learners of all levels achieve fluency in Armenian through interactive lessons,
             practical exercises, and cultural immersion. Join us to start your journey today!
           </p>
+          <div className="h-[2vh]"></div>
+          <Button size="lg" variant="primary" asChild>
+            <Link href="/about-us">Learn More</Link>
+          </Button>
         </div>
-      </div>
+      </div>    
 
       <div className="h-[25vh]"></div>
 
       <div className="flex items-center justify-center space-x-20">
         <div className="flex flex-col items-center justify-center">
-          <h2 className="text-2xl font-bold">Why Choose ArmLing?</h2>
+          <h2 className="text-2xl font-bold">Teachers? Teachers!</h2>
+          <div className="h-[2vh]"></div>
           <p className="text-center max-w-[400px]">
-            - Tailored lessons for all proficiency levels.<br />
-            - Engaging and interactive exercises.<br />
-            - A supportive community of learners.<br />
-            - Learn not just the language but also the culture and history of Armenia.
+          At ArmLing, we know that learning a language isn’t just about clicking the right answer in a quiz. That’s why we offer real teachers who personally check and grade your writing and speaking assignments.
           </p>
+          <div className="h-[2vh]"></div>
+          <Button size="lg" variant="primary" asChild>
+            <Link href="/teachers">ArmLing Teachers</Link>
+          </Button>
         </div>
         <img src="/why-choose-us.svg" alt="Why Choose ArmLing" className="w-2/3 max-w-[400px]" />
       </div>
@@ -77,6 +84,7 @@ export default function Home() {
         <img src="/help-support.svg" alt="Help and Support" className="w-1/2 max-w-[250px]" />
         <div className="flex flex-col items-center justify-center">
           <h2 className="text-2xl font-bold">Help and Support</h2>
+          <div className="h-[2vh]"></div>
           <p className="text-center max-w-[600px]">
             Need assistance? Contact us directly via email at{" "}
             <a href="mailto:support@armling.com" className="text-primary underline">
@@ -88,6 +96,8 @@ export default function Home() {
       </div>
 
       <div className="h-[15vh]"></div>
+      
+      <div className="bg-custom flex flex-col items-center text-center"><p><span className="text-lg font-light italic">P.S. Did you know that Armenian has one of the oldest written languages in the world? Knowing it is like being part of a linguistic VIP club!</span></p></div>
 
     </div>
     <Footer />
