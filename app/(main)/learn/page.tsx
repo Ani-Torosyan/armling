@@ -61,12 +61,12 @@ const LearnPage = () => {
                 <Header title="Home" />
                 <div className="space-y-4">
                     {unit && (
-                        <h2 className="text-2xl font-bold text-gray-800 text-center">
+                        <h2 className="text-2xl font-bold text-customDark text-center">
                         {unit.title}
                         </h2>
                     )}
 
-                    <div className="text-center mt-6">
+                    <div className="text-center mt-6 text-customDark">
                         <h1 className="font-bold text-base"> Lesson 1 </h1>
                     </div>
 

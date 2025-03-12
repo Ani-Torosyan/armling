@@ -96,7 +96,7 @@ const Leaderboard = () => {
                 ))}
 
                 {currentUser && (
-                    <div className="sticky bottom-0 bg-white p-4 mt-4 rounded shadow-md">
+                    <div className="sticky bottom-0 bg-custom p-4 mt-4 rounded shadow-md">
                         <div className="flex justify-between items-center">
                             <div className="flex items-center gap-4">
                                 <img src={currentUser.userImg} alt="User" className="w-6 h-6" />

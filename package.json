@@ -12,7 +12,7 @@
     "@azure/storage-blob": "^12.26.0",
     "@clerk/clerk-sdk-node": "^5.0.58",
     "@clerk/nextjs": "^6.9.6",
-    "@radix-ui/react-dialog": "^1.1.2",
+    "@radix-ui/react-dialog": "^1.1.6",
     "@radix-ui/react-slot": "^1.1.0",
     "@stripe/stripe-js": "^4.9.0",
     "axios": "^1.8.1",
