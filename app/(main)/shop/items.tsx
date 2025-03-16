@@ -30,7 +30,7 @@ export const Items = ({ hearts, time, sub }: Props) => {
 
     useEffect(() => {
         checkSubscriptionStatus();
-      }, [user, isPurchased]); // Re-run when `isPurchased` changes
+      }, [user]); // Re-run when `isPurchased` changes
       
 
     const handlePurchase = async () => {
