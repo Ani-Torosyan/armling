@@ -5,7 +5,7 @@ import { connect } from "@/db";
 import User from "@/modals/user.modal";
 
 export async function GET(req: Request) {
-    await connect(); // Ensure MongoDB connection
+    await connect();
 
     const { searchParams } = new URL(req.url);
     const clerkId = searchParams.get("clerkId");

@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useClerk } from "@clerk/nextjs";
 
 type Props = {
@@ -12,55 +12,33 @@ type Props = {
 };
 
 export const Items = ({ hearts, time, sub }: Props) => {
+    const [isSubscribed, setIsSubscribed] = useState(sub);
     const { user } = useClerk();
-    const [isPurchased, setIsPurchased] = useState(sub);
 
-    // 🔹 Fetch latest subscription status
-    const checkSubscriptionStatus = async () => {
+    const handleUpgrade = async () => {
         if (!user?.id) return;
 
         try {
-            const response = await fetch(`/api/user-status?clerkId=${user.id}`);
-            const data = await response.json();
-            setIsPurchased(data.subscription); // ✅ Sync subscription status
-        } catch (error) {
-            console.error("Error fetching subscription status:", error);
-        }
-    };
-
-    useEffect(() => {
-        checkSubscriptionStatus();
-      }, [user]); // Re-run when `isPurchased` changes
-      
-
-    const handlePurchase = async () => {
-        if (!user?.id || !user?.emailAddresses[0]?.emailAddress) return;
-    
-        try {
-            const response = await fetch('/api/checkout', {
-                method: 'POST',
+            const response = await fetch('/api/update-subscription', {
+                method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId: user.id, // Send userId
-                    email: user.emailAddresses[0]?.emailAddress,
-                }),
+                body: JSON.stringify({ userId: user.id }),
             });
-    
-            const data = await response.json();
-            if (response.ok && data.url) {
-                window.location.href = data.url;
+
+            if (response.ok) {
+                window.location.href = "https://buy.stripe.com/test_4gw7vYdPn7001a0000";
+                setIsSubscribed(true);
             } else {
-                console.error("Checkout error:", data.error);
+                console.error('Failed to update subscription');
             }
         } catch (error) {
-            console.error("Error processing purchase:", error);
+            console.error('Error updating subscription:', error);
         }
     };
 
     const formatTime = (seconds: number) => {
         const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        return `${minutes.toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
     };
 
     return (
@@ -71,7 +49,7 @@ export const Items = ({ hearts, time, sub }: Props) => {
                     <p className="text-customDark text-base lg:text-xl font-bold">Refill hearts</p>
                 </div>
                 <Button variant="ghost" disabled={hearts === 5 || time > 0}>
-                    {hearts === 5 || isPurchased ? "FULL" : <p>{formatTime(time)}</p>}
+                    {hearts === 5 || isSubscribed ? "FULL" : <p>{formatTime(time)}</p>}
                 </Button>
             </div>
             <div className="flex items-center w-full p-4 pt-8 gap-x-4 border-t-2 border-customShade">
@@ -79,8 +57,8 @@ export const Items = ({ hearts, time, sub }: Props) => {
                 <div className="flex-1">
                     <p className="text-customDark text-base lg:text-xl font-bold">Unlimited hearts</p>
                 </div>
-                <Button disabled={isPurchased} onClick={handlePurchase}>
-                    {isPurchased ? "Active" : "Buy Now"}
+                <Button disabled={isSubscribed} onClick={handleUpgrade}>
+                    {isSubscribed ? "Active" : "Upgrade"}
                 </Button>
             </div>
         </ul>
