@@ -1,5 +1,3 @@
-//test
-
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { connect } from "@/db";
@@ -14,38 +12,60 @@ export async function POST(req: Request) {
   let event;
 
   try {
+    const rawBody = await req.text();
+    console.log("✅ Received webhook event:", rawBody);
+
     event = stripe.webhooks.constructEvent(
-      await req.text(),
+      rawBody,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET as string
     );
+
+    console.log("✅ Webhook verified successfully:", event.type);
   } catch (error) {
-    console.error("Webhook error:", error);
+    console.error("❌ Webhook signature verification failed:", error);
     return NextResponse.json({ error: "Webhook signature verification failed" }, { status: 400 });
   }
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
-    const clerkId = session.metadata?.clerkId; // ✅ Retrieve clerkId from metadata
+    console.log("✅ Checkout session object:", session);
 
-    if (clerkId) {
-      try {
-        await connect(); // ✅ Ensure MongoDB is connected
+    const clerkId = session.metadata?.clerkId;
 
-        // ✅ Update subscription status in the User model
-        await User.findOneAndUpdate(
-          { clerkId },
-          { subscription: true }, // Set subscription to true
-          { new: true }
-        );
-
-        console.log(`✅ User ${clerkId} subscription updated in MongoDB`);
-      } catch (err) {
-        console.error("MongoDB update error:", err);
-      }
+    if (!clerkId) {
+      console.error("❌ Clerk ID is missing in session metadata:", session.metadata);
+      return NextResponse.json({ error: "Missing clerk ID" }, { status: 400 });
     }
+
+    console.log(`✅ Extracted Clerk ID: ${clerkId}`);
+
+    try {
+      console.log("⏳ Connecting to MongoDB...");
+      await connect();
+      console.log("✅ Connected to MongoDB");
+
+      const updatedUser = await User.findOneAndUpdate(
+        { clerkId },
+        { subscription: true }, // Set subscription to true
+        { new: true }
+      );
+
+      if (!updatedUser) {
+        console.error(`❌ No user found with clerkId: ${clerkId}`);
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
+      }
+
+      console.log(`✅ User ${clerkId} subscription updated successfully in MongoDB`);
+    } catch (err) {
+      console.error("❌ MongoDB update error:", err);
+      return NextResponse.json({ error: "Database update failed" }, { status: 500 });
+    }
+  } else {
+    console.log(`ℹ️ Unhandled event type: ${event.type}`);
   }
 
   return NextResponse.json({ received: true });
 }
+
 
