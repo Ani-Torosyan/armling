@@ -30,7 +30,8 @@ export const Items = ({ hearts, time, sub }: Props) => {
 
     useEffect(() => {
         checkSubscriptionStatus();
-    }, [user]); // Runs when user is available
+      }, [user, isPurchased]); // Re-run when `isPurchased` changes
+      
 
     const handlePurchase = async () => {
         if (!user?.id || !user?.emailAddresses[0]?.emailAddress) return;
