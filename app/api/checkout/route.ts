@@ -26,7 +26,7 @@ export async function POST(req: Request) {
       success_url: `${process.env.NEXT_PUBLIC_URL}/payments/success`,
       cancel_url: `${process.env.NEXT_PUBLIC_URL}/payments/cancel`,
       line_items: [{ price: priceId, quantity: 1 }],
-      metadata: { clerkId: userId }, // ✅ Use Clerk ID for tracking
+      metadata: { clerkId: userId },
     });
     
 
