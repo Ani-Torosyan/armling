@@ -1,5 +1,3 @@
-//test
-
 import Stripe from "stripe";
 import { connect } from "@/db";
 import User from "@/modals/user.modal";
