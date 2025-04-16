@@ -202,7 +202,6 @@ const SpeakingPage = () => {
 
           {showContinue && (
             <div className="mt-6 text-center">
-              <p className="text-green-600 font-semibold mb-2">Submission was successful!</p>
               <Button variant="primary" onClick={handleContinue}>
                 Continue
               </Button>
