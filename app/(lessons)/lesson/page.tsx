@@ -99,7 +99,7 @@ const LessonPage = () => {
         {lessonUnits.map((unit) => (
           <div key={unit._id} className="my-4 p-4 text-customDark">
             <h3 className="text-xl font-semibold flex flex-col items-center">{unit.title}</h3>
-           
+            <p className="text-center text-l text-customDark mt-2">Vocabulary and Audio study materials for the Lesson unit.</p>
           </div>
         ))}
 
@@ -111,7 +111,7 @@ const LessonPage = () => {
                 <img
                   src={exercise.picture}
                   alt={exercise.name}
-                  className="w-32 h-32 object-contain border rounded-lg"
+                  className="w-32 h-32 object-contain mr-14"
                 />
                 <span className="text-lg font-medium">{exercise.name}</span>
               </div>
@@ -124,25 +124,42 @@ const LessonPage = () => {
         )}
 
         
-        {step === 2 && (
-          <div className="flex flex-wrap justify-center gap-8 mt-10">
+      {step === 2 && (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-6">
             {lessonExercises.map((exercise) => (
-              <div key={exercise._id} className="flex flex-col items-center">
+              <div
+                key={exercise._id}
+                className="relative group flex flex-col items-center justify-center rounded-lg overflow-hidden"
+              >
+                <div className="absolute top-0 left-0 right-0 p-4 bg-opacity-70 bg-customDark text-custom text-lg font-semibold text-center">
+                  {exercise.name2}
+                </div>
                 <button
                   onClick={() => new Audio(exercise.audio).play()}
-                  className="w-32 h-32 rounded-lg shadow bg-cover bg-center border"
-                  style={{ backgroundImage: `url(${exercise.picture})` }}
-                />
-                <span className="mt-2 text-base font-medium">{exercise.name2}</span>
+                  className="w-full h-48 flex items-center justify-center bg-cover bg-center"
+                  style={{
+                    backgroundImage: `url(${exercise.picture})`,
+                    backgroundSize: "50%",
+                    backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
+                  }}
+                >
+                  <div className="absolute inset-0 bg-customDark opacity-10 group-hover:opacity-40 transition-opacity"></div>
+                </button>
               </div>
             ))}
-            <div className="mt-6 text-center">
-              <Button variant="primary" onClick={handleContinue}>
-                Continue
-              </Button>
-            </div>
           </div>
-        )}
+          <div className="mt-6 text-center">
+            <Button variant="primary" onClick={() => setStep(1)} className="mt-6 text-center mr-8">
+              Previous
+            </Button>
+            <Button variant="primary" onClick={handleContinue}>
+              Continue
+            </Button>
+          </div>
+        </>
+      )}
       </FeedWrapper>
     </div>
   );
