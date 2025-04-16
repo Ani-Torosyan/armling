@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 const WritingSubmissionsPage = () => {
   const [submissions, setSubmissions] = useState([]);
+  const [exerciseDetails, setExerciseDetails] = useState<Record<string, { task: string; exerciseType: string }>>({});
   const router = useRouter();
 
   useEffect(() => {
@@ -16,6 +17,34 @@ const WritingSubmissionsPage = () => {
         }
         const data = await response.json();
         setSubmissions(data);
+<<<<<<< HEAD
+=======
+
+        // Fetch exercise details for each submission
+        const details: Record<string, { task: string; exerciseType: string }> = {};
+        await Promise.all(
+          data.map(async (submission: any) => {
+            const exerciseUUID = submission.exerciseUUID;
+            if (exerciseUUID && !details[exerciseUUID]) {
+              try {
+                const detailResponse = await fetch(`/api/exercise?uuid=${exerciseUUID}`);
+                if (detailResponse.ok) {
+                  const detailData = await detailResponse.json();
+                  details[exerciseUUID] = {
+                    task: detailData.task,
+                    exerciseType: detailData.exerciseType,
+                  };
+                } else {
+                  details[exerciseUUID] = { task: "Unnamed Exercise", exerciseType: "Unknown" };
+                }
+              } catch {
+                details[exerciseUUID] = { task: "Unnamed Exercise", exerciseType: "Unknown" };
+              }
+            }
+          })
+        );
+        setExerciseDetails(details);
+>>>>>>> 5670c6fc54221328f0b0137f0ff7e11decddacaf
       } catch (error) {
         console.error("Error fetching writing submissions:", error);
       }
@@ -47,7 +76,8 @@ const WritingSubmissionsPage = () => {
           {submissions.map((submission: any) => (
             <div key={submission._id} className="p-4 border rounded shadow">
               <p><strong>Nickname:</strong> {submission.nickname}</p>
-              <p><strong>Exercise UUID:</strong> {submission.exerciseUUID}</p>
+              <p><strong>Exercise Type:</strong> {exerciseDetails[submission.exerciseUUID]?.exerciseType || "Loading..."}</p>
+              <p><strong>Task:</strong> {exerciseDetails[submission.exerciseUUID]?.task || "Loading..."}</p>
               <p><strong>Submitted At:</strong> {new Date(submission.createdAt).toLocaleString()}</p>
               <div className="flex gap-4 mt-2">
                 <button
