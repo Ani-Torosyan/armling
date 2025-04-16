@@ -29,6 +29,7 @@ interface ReadingExercise {
   questions: Question[];
   group: string;
   uuid: string;
+  cc: string;
 }
 
 type User = {
