@@ -19,11 +19,17 @@ export async function PUT(request: Request) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
     }
 
+    // Decrement hearts and update lastHeartUpdate
     const newHearts = Math.max(0, user.userHearts - 1);
     user.userHearts = newHearts;
+    user.lastHeartUpdate = new Date(); // Update the lastHeartUpdate field
     await user.save();
 
-    return NextResponse.json({ message: 'Hearts updated successfully', hearts: newHearts });
+    return NextResponse.json({
+      message: 'Hearts updated successfully',
+      hearts: newHearts,
+      lastHeartUpdate: user.lastHeartUpdate,
+    });
   } catch (error) {
     console.error('Error updating user hearts:', error);
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
