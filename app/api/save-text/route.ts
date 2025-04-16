@@ -2,6 +2,7 @@ import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-bl
 import { NextResponse } from "next/server";
 import { connect } from "@/db";
 import User from "@/modals/user.modal";
+import WritingSubmission from "@/modals/writing-submission.modal";
 
 const AZURE_STORAGE_ACCOUNT_NAME = process.env.AZURE_STORAGE_ACCOUNT_NAME || "";
 const AZURE_STORAGE_ACCOUNT_KEY = process.env.AZURE_STORAGE_ACCOUNT_KEY || "";
@@ -31,12 +32,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "User not found." }, { status: 404 });
     }
 
-    // Check if the exercise UUID already exists
     if (user.writing.includes(exerciseUUID)) {
       return NextResponse.json({ message: "Exercise already submitted." }, { status: 400 });
     }
 
-    // Azure Blob Storage setup
     const blobServiceClient = new BlobServiceClient(
       `https://${AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net`,
       new StorageSharedKeyCredential(AZURE_STORAGE_ACCOUNT_NAME, AZURE_STORAGE_ACCOUNT_KEY)
@@ -51,6 +50,29 @@ export async function POST(request: Request) {
     const blockBlobClient = containerClient.getBlockBlobClient(blobName);
     await blockBlobClient.upload(text, Buffer.byteLength(text));
 
+    const fileUrl = `https://${AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${containerName}/${filename}`;
+
+    // Debugging: Log the data to be saved
+    console.log("Preparing to save WritingSubmission:", { clerkId, exerciseUUID, fileUrl });
+
+    // Save the writing submission in MongoDB
+    try {
+      const writingSubmission = new WritingSubmission({
+        clerkId,
+        exerciseUUID,
+        fileUrl,
+      });
+
+      await writingSubmission.save();
+      console.log("WritingSubmission saved successfully.");
+    } catch (saveError) {
+      console.error("Error saving WritingSubmission:", saveError);
+      return NextResponse.json(
+        { message: "Failed to save WritingSubmission.", error: saveError instanceof Error ? saveError.message : "Unknown error" },
+        { status: 500 }
+      );
+    }
+
     // Add exercise UUID to user's writing array
     user.writing.push(exerciseUUID);
     await user.save();
@@ -59,6 +81,7 @@ export async function POST(request: Request) {
       message: "Text saved successfully.",
       blobName,
       containerName,
+      fileUrl,
     });
   } catch (error) {
     console.error("Error saving text to Azure Blob Storage:", error);
