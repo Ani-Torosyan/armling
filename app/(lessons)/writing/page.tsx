@@ -29,36 +29,41 @@ const WritingPage = () => {
   const router = useRouter();
 
   const [exercise, setExercise] = useState<WritingExercise | null>(null);
+  const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<User | null>(null);
   const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchExercise = async () => {
       try {
-        const res = await axios.get("/api/writing");
-        setExercise(res.data.WritingExercises[0]);
-      } catch (err) {
-        console.error("Error fetching exercise:", err);
+        const response = await axios.get("/api/writing");
+        setExercise(response.data.WritingExercises[0]);
+      } catch (error) {
+        console.error("Error fetching exercise:", error);
       }
     };
+
     fetchExercise();
   }, []);
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!user?.id || !exercise?.uuid) return;
-
       try {
-        const res = await axios.get(`/api/user?userId=${user.id}`);
-        const userInfo = res.data;
-        setUserData(userInfo);
+        if (!user?.id || !exercise?.uuid) return;
 
-        if (userInfo.writing?.includes(exercise.uuid)) {
-          setSubmitted(true);
+        const response = await axios.get(`/api/user?userId=${user.id}`);
+        if (response.status === 200) {
+          const userInfo = response.data;
+          setUserData(userInfo);
+
+          if (userInfo.writing?.includes(exercise.uuid)) {
+            setSubmitted(true);
+          }
+        } else {
+          console.error("Error fetching user data");
         }
-      } catch (err) {
-        console.error("Error fetching user data:", err);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
       } finally {
         setLoading(false);
       }
@@ -70,7 +75,7 @@ const WritingPage = () => {
   }, [user, exercise]);
 
   const handleSubmitAll = async () => {
-    const textarea = document.querySelector("textarea");
+    const textarea = document.querySelector("textarea") as HTMLTextAreaElement;
     const text = textarea?.value || "";
 
     if (!text.trim()) return;
@@ -87,6 +92,9 @@ const WritingPage = () => {
 
       if (response.ok) {
         setSubmitted(true);
+      } else {
+        const errorData = await response.json();
+        console.error("Failed to save text:", errorData.message);
       }
     } catch (error) {
       console.error("Error submitting text:", error);
@@ -97,53 +105,62 @@ const WritingPage = () => {
     router.push("/learn");
   };
 
-  if (loading || !exercise) return <Loading />;
+  if (loading || !exercise || !userData) return <Loading />;
 
   return (
     <div className="gap-[48px] px-6">
       <FeedWrapper>
         <Header title="Writing Exercise" />
-        <Button onClick={handleBackToLearn} size="lg" className="rounded-full" variant="ghost">
+        <Button onClick={handleBackToLearn} size="lg" className="rounded-full" variant={"ghost"}>
           <img src="back.svg" alt="Back" className="w-4 h-4 mr-2" />
           Back to Learn
         </Button>
 
-        <div className="w-full flex flex-col mt-6">
+        <div className="w-full flex flex-col">
           <div className="my-4">
-            <h3 className="font-semibold flex justify-center text-customDark">{exercise.title}</h3>
-            <p className="mt-2 text-customDark flex justify-center">{exercise.task}</p>
+            <h3 className="font-semibold flex justify-center text-customDark">
+              {exercise.title}
+            </h3>
+            <p className="mt-2 text-customDark flex justify-center">
+              {exercise.task}
+            </p>
 
-            {!submitted && (
-              <div className="mt-4 flex justify-center">
-                <textarea
-                  placeholder="Type your answer here"
-                  className="border p-4 w-full max-w-lg resize-y"
-                  rows={3}
-                />
-              </div>
-            )}
+            {/* {submitted && (
+              <p className="text-green-600 font-semibold mt-6 text-center text-lg">
+                You have already submitted this exercise.
+              </p>
+            )} */}
 
-            <div className="mt-6 flex flex-col items-center">
-              <Button
-                variant="primaryOutline"
-                className={`w-[200px] ${
-                  submitted ? "bg-gray-300 text-gray-600 cursor-not-allowed" : ""
+            <div className="mt-4 flex justify-center">
+              <textarea
+                placeholder="Type your answer here"
+                className={`border p-4 w-full max-w-lg resize-y ${
+                  submitted ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""
                 }`}
-                onClick={handleSubmitAll}
-                disabled={submitted}
-              >
-                Submit
-              </Button>
-
-              {submitted && (
-                <p className="text-green-600 font-semibold mt-2">
-                  You have already submitted this writing exercise.
-                </p>
-              )}
+                rows={3}
+                disabled={true}
+              />
             </div>
           </div>
         </div>
       </FeedWrapper>
+
+      <div className="mt-6 flex flex-col items-center w-full">
+        <button
+          className={`px-6 py-2 rounded-lg font-semibold ${
+            submitted
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-orange-600 text-white hover:bg-orange-700"
+          } transition-none duration-0`}
+          onClick={handleSubmitAll}
+          disabled={true}
+        >
+          Submit
+        </button>
+        <p className="text-green-600 font-semibold mt-6 text-center text-lg">
+                You have already submitted this exercise.
+              </p>
+      </div>
     </div>
   );
 };
