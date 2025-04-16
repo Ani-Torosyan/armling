@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Header } from "../../(main)/header";
 
 const CheckWritingPage = () => {
   const router = useRouter();
@@ -46,41 +48,43 @@ const CheckWritingPage = () => {
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Check Writing Submission</h1>
-      <div className="mb-4">
-        <a
-          href={fileUrl || "#"}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-500 underline"
-        >
-          View Submission
-        </a>
+    <>
+    <Header title="Check Writing Submission" />
+      <div className="p-6 text-customDark">
+        <div className="mb-4">
+          <a
+            href={fileUrl || "#"}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-customDark underline"
+          >
+            Download the Submission
+          </a>
+        </div>
+        <textarea
+          className="w-full p-4 border rounded mb-4"
+          rows={5}
+          placeholder="Write your feedback here..."
+          value={feedback}
+          onChange={(e) => setFeedback(e.target.value)}
+        />
+        <div className="flex gap-4">
+          <Button
+            variant={"primary"}
+            onClick={handleSubmitFeedback}
+            disabled={loading}
+          >
+            {loading ? "Submitting..." : "Submit Feedback"}
+          </Button>
+          <Button
+            variant={"sidebar"}
+            onClick={() => router.push("/writing-review")} // Explicitly navigate to /writing-review
+          >
+            Back
+          </Button>
+        </div>
       </div>
-      <textarea
-        className="w-full p-4 border rounded mb-4"
-        rows={5}
-        placeholder="Write your feedback here..."
-        value={feedback}
-        onChange={(e) => setFeedback(e.target.value)}
-      />
-      <div className="flex gap-4">
-        <button
-          className="px-4 py-2 bg-blue-500 text-white rounded"
-          onClick={handleSubmitFeedback}
-          disabled={loading}
-        >
-          {loading ? "Submitting..." : "Submit Feedback"}
-        </button>
-        <button
-          className="px-4 py-2 bg-gray-500 text-white rounded"
-          onClick={() => router.push("/writing-review")} // Explicitly navigate to /writing-review
-        >
-          Back
-        </button>
-      </div>
-    </div>
+    </>
   );
 };
 

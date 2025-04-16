@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Header } from "../../(main)/header";
+import { Button } from "@/components/ui/button";
 
 const WritingSubmissionsPage = () => {
   const [submissions, setSubmissions] = useState([]);
@@ -36,32 +38,32 @@ const WritingSubmissionsPage = () => {
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Writing Submissions</h1>
-      <div className="space-y-4">
+    <>
+      <Header title="Writing Reviews" />
+      <div className="space-y-4 text-customDark border-2 rounded shadow border-customShade mt-4">
         {submissions.map((submission: any) => (
-          <div key={submission._id} className="p-4 border rounded shadow">
+          <div key={submission._id} className="p-4">
             <p><strong>Nickname:</strong> {submission.nickname}</p>
             <p><strong>Exercise UUID:</strong> {submission.exerciseUUID}</p>
             <p><strong>Submitted At:</strong> {new Date(submission.createdAt).toLocaleString()}</p>
             <div className="flex gap-4 mt-2">
-              <button
-                className="px-4 py-2 bg-blue-500 text-white rounded"
+              <Button
+                variant="primary"
                 onClick={() => downloadFile(submission.fileUrl)}
               >
                 Download
-              </button>
-              <button
-                className="px-4 py-2 bg-green-500 text-white rounded"
+              </Button>
+              <Button
+                variant="secondary"
                 onClick={() => handleView(submission._id, submission.fileUrl)}
               >
                 View
-              </button>
+              </Button>
             </div>
           </div>
         ))}
       </div>
-    </div>
+    </>
   );
 };
 
