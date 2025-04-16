@@ -108,12 +108,12 @@ const WritingPage = () => {
           Back to Learn
         </Button>
 
-        {!submitted ? (
-          <div className="w-full flex flex-col">
-            <div className="my-4">
-              <h3 className="font-semibold flex justify-center text-customDark">{exercise.title}</h3>
-              <p className="mt-2 text-customDark flex justify-center">{exercise.task}</p>
+        <div className="w-full flex flex-col mt-6">
+          <div className="my-4">
+            <h3 className="font-semibold flex justify-center text-customDark">{exercise.title}</h3>
+            <p className="mt-2 text-customDark flex justify-center">{exercise.task}</p>
 
+            {!submitted && (
               <div className="mt-4 flex justify-center">
                 <textarea
                   placeholder="Type your answer here"
@@ -121,21 +121,28 @@ const WritingPage = () => {
                   rows={3}
                 />
               </div>
+            )}
 
-              <div className="mt-6 flex justify-center">
-                <Button variant="primary" onClick={handleSubmitAll}>
-                  Submit
-                </Button>
-              </div>
+            <div className="mt-6 flex flex-col items-center">
+              <Button
+                variant="primaryOutline"
+                className={`w-[200px] ${
+                  submitted ? "bg-gray-300 text-gray-600 cursor-not-allowed" : ""
+                }`}
+                onClick={handleSubmitAll}
+                disabled={submitted}
+              >
+                Submit
+              </Button>
+
+              {submitted && (
+                <p className="text-green-600 font-semibold mt-2">
+                  You have already submitted this writing exercise.
+                </p>
+              )}
             </div>
           </div>
-        ) : (
-          <div className="w-full flex justify-center mt-10">
-            <p className="text-green-600 font-semibold">
-              You have already submitted this writing exercise.
-            </p>
-          </div>
-        )}
+        </div>
       </FeedWrapper>
     </div>
   );
