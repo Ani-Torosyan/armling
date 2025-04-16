@@ -44,7 +44,7 @@ export async function PUT(request: Request) {
     try {
       await connect();
       const body = await request.json();
-      const { userId, score, completedListeningUUID, completedReadingUUID } = body;
+      const { userId, score, completedListeningUUID, completedReadingUUID, completedSpeakingUUID } = body;
   
       if (!userId || score == null) {
         return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
@@ -66,6 +66,10 @@ export async function PUT(request: Request) {
       
       if (completedReadingUUID && !user.reading.includes(completedReadingUUID)) {
         user.reading.push(completedReadingUUID);
+      }
+
+      if (completedSpeakingUUID && !user.speaking.includes(completedSpeakingUUID)) {
+        user.speaking.push(completedSpeakingUUID);
       }
   
       await user.save();
