@@ -152,12 +152,22 @@ const ListeningPage = () => {
         <Header title="Listening Exercise" />
         <div className="space-y-4" />
 
-        <div className="text-left mb-4">
+        <div className="flex justify-between items-center mb-4">
           <Button onClick={handleBack} size="lg" className="rounded-full" variant={"ghost"}>
             <img src="back.svg" alt="Back" className="w-4 h-4 mr-2" />
             Back to Learn
           </Button>
+
+          {hasAnsweredCorrectly && (
+            <Button variant="ghost" onClick={() => setShowCC(!showCC)} className="ml-auto">
+              {showCC ? "Hide CC" : "Show CC"} <img src="cc.svg" alt="Back" className="w-4 h-4 ml-2 mr-5" />
+            </Button>
+          )}
         </div>
+
+        {showCC && exercise.cc && (
+          <div className="mb-4 p-4 bg-customMid text-center">{exercise.cc}</div>
+        )}
 
         <div className="my-4 p-4 rounded-md text-customDark">
           <div className="mb-4">
@@ -172,18 +182,6 @@ const ListeningPage = () => {
           </div>
 
           <h2 className="text-xl mb-4 flex flex-col items-center">{exercise.title}</h2>
-
-          {/* CC button that appears after answering correctly */}
-          {hasAnsweredCorrectly && (
-            <Button onClick={() => setShowCC(!showCC)} className="mb-4">
-              {showCC ? "Hide CC" : "Show CC"}
-            </Button>
-          )}
-
-          {/* CC text */}
-          {showCC && exercise.cc && (
-            <div className="mb-4 p-4 bg-gray-100 text-center">{exercise.cc}</div>
-          )}
 
           <div className="text-customDark">
             <h3 className="font-medium mb-4 flex flex-col items-center">{exercise.task}</h3>

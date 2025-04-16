@@ -212,7 +212,7 @@ const ReadingPage = () => {
         </Button>
 
         {currentExercise && (
-          <div key={currentExercise._id} className="mb-10 border-b pb-6">
+          <div key={currentExercise._id} className="mb-10 pb-6">
             <div className="text-l mb-4 text-justify text-customDark">
               {currentExercise.passage.split('\n').map((line, index) => (
                 <React.Fragment key={index}>
@@ -284,11 +284,11 @@ const ReadingPage = () => {
             </div>
 
             <div className="flex justify-between mt-6">
-              <Button onClick={handlePreviousExercise} disabled={currentExerciseIndex === 0}>
-                Previous Exercise
+              <Button variant="ghost" onClick={handlePreviousExercise} disabled={currentExerciseIndex === 0}>
+                <img src="left.svg" alt="Back" className="w-4 h-4 mr-2" /> Previous Exercise
               </Button>
-              <Button onClick={handleNextExercise} disabled={currentExerciseIndex === exercises.length - 1}>
-                Next Exercise
+              <Button variant="ghost" onClick={handleNextExercise} disabled={currentExerciseIndex === exercises.length - 1}>
+               Next Exercise <img src="right.svg" alt="Back" className="w-4 h-4 ml-2" />
               </Button>
             </div>
           </div>
