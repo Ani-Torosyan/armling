@@ -125,12 +125,6 @@ const WritingPage = () => {
               {exercise.task}
             </p>
 
-            {/* {submitted && (
-              <p className="text-green-600 font-semibold mt-6 text-center text-lg">
-                You have already submitted this exercise.
-              </p>
-            )} */}
-
             <div className="mt-4 flex justify-center">
               <textarea
                 placeholder="Type your answer here"
@@ -138,7 +132,7 @@ const WritingPage = () => {
                   submitted ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""
                 }`}
                 rows={3}
-                disabled={true}
+                disabled={submitted}
               />
             </div>
           </div>
@@ -146,17 +140,13 @@ const WritingPage = () => {
       </FeedWrapper>
 
       <div className="mt-6 flex flex-col items-center w-full">
-        <button
-          className={`px-6 py-2 rounded-lg font-semibold ${
-            submitted
-              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-              : "bg-orange-600 text-white hover:bg-orange-700"
-          } transition-none duration-0`}
+        <Button
+          variant="primary"
           onClick={handleSubmitAll}
-          disabled={true}
+          disabled={submitted}
         >
           Submit
-        </button>
+        </Button>
         <p className="text-green-600 font-semibold mt-6 text-center text-lg">
                 You have already submitted this exercise.
               </p>
