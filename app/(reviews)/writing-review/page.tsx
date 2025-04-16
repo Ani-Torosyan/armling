@@ -32,7 +32,7 @@ const WritingSubmissionsPage = () => {
   };
 
   const handleView = (submissionId: string, fileUrl: string) => {
-    router.push(`/reviews/checkwriting?id=${submissionId}&fileUrl=${encodeURIComponent(fileUrl)}`);
+    router.push(`/checkwriting?id=${submissionId}&fileUrl=${encodeURIComponent(fileUrl)}`);
   };
 
   return (
