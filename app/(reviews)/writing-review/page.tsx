@@ -15,7 +15,7 @@ const WritingSubmissionsPage = () => {
           throw new Error("Failed to fetch writing submissions");
         }
         const data = await response.json();
-        setSubmissions(data); // Set the submissions data
+        setSubmissions(data);
       } catch (error) {
         console.error("Error fetching writing submissions:", error);
       }
