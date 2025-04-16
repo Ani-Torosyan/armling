@@ -48,8 +48,8 @@ const ReadingPage = () => {
   const [userAnswers, setUserAnswers] = useState<Record<number, (number | null)[]>>({});
   const [answerStatuses, setAnswerStatuses] = useState<Record<number, ("correct" | "incorrect" | null)[]>>({});
   
-  // Track current page for each exercise
-  const [currentPageIndex, setCurrentPageIndex] = useState<Record<number, number>>({});
+  // Track the current exercise page index
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
 
   useEffect(() => {
     const fetchExercise = async () => {
@@ -59,17 +59,14 @@ const ReadingPage = () => {
 
         const initAnswers: Record<number, (number | null)[]> = {};
         const initStatuses: Record<number, ("correct" | "incorrect" | null)[]> = {};
-        const initPageIndex: Record<number, number> = {};
 
         data.forEach((ex: ReadingExercise, idx: number) => {
           initAnswers[idx] = new Array(ex.questions.length).fill(null);
           initStatuses[idx] = new Array(ex.questions.length).fill(null);
-          initPageIndex[idx] = 0; // Start on the first question
         });
 
         setUserAnswers(initAnswers);
         setAnswerStatuses(initStatuses);
-        setCurrentPageIndex(initPageIndex);
       } catch (error) {
         console.error("Error fetching exercises:", error);
       } finally {
@@ -155,7 +152,7 @@ const ReadingPage = () => {
         setUserData(prev =>
           prev ? { ...prev, userHearts: Math.max(0, prev.userHearts - 1) } : prev
         );
-      } catch (error)        {
+      } catch (error) {
         console.error("Error updating user hearts:", error);
       }
     }
@@ -179,22 +176,18 @@ const ReadingPage = () => {
 
   const handleBackToLearn = () => router.push("/learn");
 
-  const handleNextPage = (exIndex: number) => {
-    setCurrentPageIndex(prev => ({
-      ...prev,
-      [exIndex]: Math.min(exercises[exIndex]?.questions.length - 1, prev[exIndex] + 1),
-    }));
+  const handleNextExercise = () => {
+    setCurrentExerciseIndex(prev => Math.min(exercises.length - 1, prev + 1));
   };
 
-  const handlePreviousPage = (exIndex: number) => {
-    setCurrentPageIndex(prev => ({
-      ...prev,
-      [exIndex]: Math.max(0, prev[exIndex] - 1),
-    }));
+  const handlePreviousExercise = () => {
+    setCurrentExerciseIndex(prev => Math.max(0, prev - 1));
   };
 
   if (loading) return <Loading />;
   if (!userData) return <div className="text-center text-customDark">Something went wrong. Please reload the page.</div>;
+
+  const currentExercise = exercises[currentExerciseIndex];
 
   return (
     <div className="flex flex-row-reverse gap-[48px] px-6">
@@ -213,10 +206,10 @@ const ReadingPage = () => {
           <img src="back.svg" alt="Back" className="w-4 h-4 mr-2" /> Back to Learn
         </Button>
 
-        {exercises.map((exercise, exIndex) => (
-          <div key={exercise._id} className="mb-10 border-b pb-6">
+        {currentExercise && (
+          <div key={currentExercise._id} className="mb-10 border-b pb-6">
             <div className="text-l mb-4 text-justify text-customDark">
-              {exercise.passage.split('\n').map((line, index) => (
+              {currentExercise.passage.split('\n').map((line, index) => (
                 <React.Fragment key={index}>
                   {line}
                   <br />
@@ -225,22 +218,21 @@ const ReadingPage = () => {
             </div>
 
             <div className="w-full flex flex-col items-center text-customDark">
-              <h3 className="font-medium mb-4">{exercise.task}</h3>
+              <h3 className="font-medium mb-4">{currentExercise.task}</h3>
 
-              {/* Render current page question */}
-              {exercise.questions && exercise.questions.length > 0 && (
-                <div className="my-2">
-                  <p className="text-center mb-2">{exercise.questions[currentPageIndex[exIndex]].question}</p>
+              {currentExercise.questions.map((q, index) => (
+                <div key={index} className="my-2">
+                  <p className="text-center mb-2">{q.question}</p>
                   <div className="flex justify-center items-center space-x-4">
-                    {exercise.questions[currentPageIndex[exIndex]].options.map((option, i) => {
-                      const selected = userAnswers[exIndex]?.[currentPageIndex[exIndex]] === i;
-                      const submitted = submittedIndexes.includes(exIndex);
-                      const status = answerStatuses[exIndex]?.[currentPageIndex[exIndex]];
+                    {q.options.map((option, i) => {
+                      const selected = userAnswers[currentExerciseIndex]?.[index] === i;
+                      const submitted = submittedIndexes.includes(currentExerciseIndex);
+                      const status = answerStatuses[currentExerciseIndex]?.[index];
 
                       return (
                         <Button
                           key={i}
-                          onClick={() => handleAnswerSubmit(exIndex, currentPageIndex[exIndex], i)}
+                          onClick={() => handleAnswerSubmit(currentExerciseIndex, index, i)}
                           variant={
                             selected
                               ? submitted
@@ -264,39 +256,38 @@ const ReadingPage = () => {
                       );
                     })}
                   </div>
-                  {submittedIndexes.includes(exIndex) &&
-                    userAnswers[exIndex][currentPageIndex[exIndex]] !== null && (
-                      <p className={`mt-2 text-center ${answerStatuses[exIndex][currentPageIndex[exIndex]] === "correct" ? "text-green-500" : "text-red-500"}`}>
-                        {answerStatuses[exIndex][currentPageIndex[exIndex]] === "correct" ? "Ճիշտ է!" : "Սխալ է. Փորձեք նորից!"}
+                  {submittedIndexes.includes(currentExerciseIndex) &&
+                    userAnswers[currentExerciseIndex][index] !== null && (
+                      <p className={`mt-2 text-center ${answerStatuses[currentExerciseIndex][index] === "correct" ? "text-green-500" : "text-red-500"}`}>
+                        {answerStatuses[currentExerciseIndex][index] === "correct" ? "Ճիշտ է!" : "Սխալ է. Փորձեք նորից!"}
                       </p>
                     )}
                 </div>
-              )}
+              ))}
 
-              {/* Navigation and Submit Buttons */}
-              <div className="flex justify-between mt-4 w-full max-w-md">
-                {currentPageIndex[exIndex] > 0 && (
-                  <Button onClick={() => handlePreviousPage(exIndex)}>← Previous</Button>
-                )}
-                {currentPageIndex[exIndex] < exercise.questions.length - 1 && (
-                  <Button onClick={() => handleNextPage(exIndex)}>Next →</Button>
-                )}
-              </div>
-
-              {!submittedIndexes.includes(exIndex) && (
-                <Button variant="primary" onClick={() => handleSubmitExercise(exIndex)} className="mt-6">
+              {!submittedIndexes.includes(currentExerciseIndex) && (
+                <Button variant="primary" onClick={() => handleSubmitExercise(currentExerciseIndex)} className="mt-6">
                   Submit
                 </Button>
               )}
 
-              {submittedIndexes.includes(exIndex) && answerStatuses[exIndex]?.includes("incorrect") && (
-                <Button variant="primary" onClick={() => handleRetry(exIndex)} className="mt-6">
+              {submittedIndexes.includes(currentExerciseIndex) && answerStatuses[currentExerciseIndex]?.includes("incorrect") && (
+                <Button variant="primary" onClick={() => handleRetry(currentExerciseIndex)} className="mt-6">
                   Try Again
                 </Button>
               )}
             </div>
+
+            <div className="flex justify-between mt-6">
+              <Button onClick={handlePreviousExercise} disabled={currentExerciseIndex === 0}>
+                Previous Exercise
+              </Button>
+              <Button onClick={handleNextExercise} disabled={currentExerciseIndex === exercises.length - 1}>
+                Next Exercise
+              </Button>
+            </div>
           </div>
-        ))}
+        )}
       </FeedWrapper>
     </div>
   );
