@@ -41,7 +41,7 @@ export default function Home() {
 
             <ClerkLoaded>
               <SignedOut>
-                <SignInButton forceRedirectUrl={"/reviews/writing-review"}>
+                <SignInButton forceRedirectUrl={"/writing-review"}>
                   <Button size="lg" variant="secondary" type="submit">
                     I am a teacher
                   </Button>
@@ -49,7 +49,7 @@ export default function Home() {
               </SignedOut>
               <SignedIn>
                 <Button size="lg" variant="secondary" asChild>
-                  <Link href="/reviews/writing-review">I am a teacher</Link>
+                  <Link href="/writing-review">I am a teacher</Link>
                 </Button>
               </SignedIn>
                   <Button size="lg" variant="primaryOutline" type="submit">

@@ -1,5 +1,3 @@
-//test
-
 import { NextResponse } from "next/server";
 import { connect } from "@/db";
 import User from "@/modals/user.modal";

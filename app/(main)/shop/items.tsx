@@ -33,15 +33,14 @@ export const Items = ({ hearts, time, sub }: Props) => {
       
 
     const handlePurchase = async () => {
-        if (!user?.id || !user?.emailAddresses[0]?.emailAddress) return;
+        if (!user?.id) return;
     
         try {
             const response = await fetch('/api/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    userId: user.id,
-                    email: user.emailAddresses[0]?.emailAddress,
+                    userId: user.id
                 }),
             });
     

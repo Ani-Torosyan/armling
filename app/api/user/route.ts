@@ -39,3 +39,46 @@ export async function GET(request: Request) {
         return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
     }
 }
+
+export async function PUT(request: Request) {
+    try {
+      await connect();
+      const body = await request.json();
+      const { userId, score, completedListeningUUID, completedReadingUUID, completedSpeakingUUID } = body;
+  
+      if (!userId || score == null) {
+        return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
+      }
+  
+      const user = await User.findOne({ clerkId: userId });
+  
+      if (!user) {
+        return NextResponse.json({ message: "User not found" }, { status: 404 });
+      }
+  
+      user.userExp = score;
+  
+      
+      if (completedListeningUUID && !user.listening.includes(completedListeningUUID)) {
+        user.listening.push(completedListeningUUID);
+      }
+  
+      
+      if (completedReadingUUID && !user.reading.includes(completedReadingUUID)) {
+        user.reading.push(completedReadingUUID);
+      }
+
+      if (completedSpeakingUUID && !user.speaking.includes(completedSpeakingUUID)) {
+        user.speaking.push(completedSpeakingUUID);
+      }
+  
+      await user.save();
+  
+      return NextResponse.json({ message: "User data updated successfully" }, { status: 200 });
+    } catch (error) {
+      console.error("Error updating user data:", error);
+      return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+    }
+  }
+  
+  

@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 
 const isTeacherRoute = createRouteMatcher(['/reviews(.*)'])
 
-const isPublicRoute = createRouteMatcher(["/", "/api/webhooks", "/api/data", "/teachers", "/about-us"]);
+const isPublicRoute = createRouteMatcher(["/", "/api/webhooks", "/api/data", "/teachers", "/about-us", "/api/stripe-webhooks"]);
 
 export default clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {

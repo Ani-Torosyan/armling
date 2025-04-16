@@ -1,5 +1,3 @@
-//test
-
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
@@ -23,8 +21,8 @@ export async function POST(req: Request) {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
-      success_url: `${process.env.NEXT_PUBLIC_URL}/payments/success`,
-      cancel_url: `${process.env.NEXT_PUBLIC_URL}/payments/cancel`,
+      success_url: `${process.env.NEXT_PUBLIC_URL}/(payments)/success`,
+      cancel_url: `${process.env.NEXT_PUBLIC_URL}/(payments)/cancel`,
       line_items: [{ price: priceId, quantity: 1 }],
       metadata: { clerkId: userId },
     });

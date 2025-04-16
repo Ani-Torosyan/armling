@@ -1,5 +1,3 @@
-//test
-
 import Stripe from "stripe";
 import { connect } from "@/db";
 import User from "@/modals/user.modal";
@@ -46,5 +44,3 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ received: true });
 }
-
-

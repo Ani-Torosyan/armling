@@ -1,6 +1,3 @@
-//TODO: Upload into cloud
-//TODO: Lesson repetition case handeled(no repetition allowed!)
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -16,7 +13,7 @@ interface SpeakingExercise {
   _id: string;
   title: string;
   content: string;
-  point: string; 
+  point: string;
 }
 
 const SpeakingPage = () => {
@@ -28,7 +25,8 @@ const SpeakingPage = () => {
   const [recording, setRecording] = useState<MediaRecorder | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [showContinue, setShowContinue] = useState(false);
-  
+  const [completedSpeakingIds, setCompletedSpeakingIds] = useState<string[]>([]);
+
   useEffect(() => {
     const fetchSpeakingExercises = async () => {
       try {
@@ -45,16 +43,33 @@ const SpeakingPage = () => {
       }
     };
 
+    const fetchUserData = async () => {
+      if (!user?.id) return;
+      try {
+        const res = await axios.get(`/api/user?userId=${user.id}`);
+        setCompletedSpeakingIds(res.data.completedSpeakingExercises || []);
+      } catch (error) {
+        console.error("Error fetching user speaking UUIDs:", error);
+      }
+    };
+
     fetchSpeakingExercises();
+    fetchUserData();
   }, [user]);
 
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
+      const chunks: Blob[] = [];
 
       mediaRecorder.ondataavailable = (event) => {
-        setAudioBlob(event.data); 
+        chunks.push(event.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const fullBlob = new Blob(chunks, { type: "audio/webm" });
+        setAudioBlob(fullBlob);
       };
 
       mediaRecorder.start();
@@ -71,55 +86,60 @@ const SpeakingPage = () => {
     }
   };
 
-  const handleBack = () => {
-    router.push("/learn");
-  };
-
   const uploadRecording = async (exerciseId: string) => {
     if (!audioBlob || !user?.id) return;
 
-    const formData = new FormData();
-    const audioFile = new File([audioBlob], `exercise_${exerciseId}_${Date.now()}.webm`, {
-      type: "audio/webm",
-    });
-    formData.append("file", audioFile);
+    // prevent upload if already completed
+    if (completedSpeakingIds.includes(exerciseId)) {
+      alert("You've already submitted this exercise.");
+      return;
+    }
+
+    const fileName = `${user.id}.webm`;
+    const sasToken = process.env.NEXT_PUBLIC_AZURE_SAS_TOKEN;
+    const uploadUrl = `https://armling01.blob.core.windows.net/user-recordings/${fileName}?${sasToken}`;
+
+    const audioFile = new File([audioBlob], fileName, { type: "audio/webm" });
 
     try {
-      const azureResponse = await axios.post(
-        "https://armling01.blob.core.windows.net/user-recordings?sp=rawdl&st=2024-12-10T06:24:09Z&se=2025-01-02T14:24:09Z&spr=https&sv=2022-11-02&sr=c&sig=Lq%2FmPkELpJUsBziABoUlWFn%2FJYCL0vKY6afFDDtnP2w%3D",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${process.env.AZURE_SAS_TOKEN}`,
-          },
-        }
-      );
+      await axios.put(uploadUrl, audioFile, {
+        headers: {
+          "x-ms-blob-type": "BlockBlob",
+          "Content-Type": "audio/webm",
+        },
+      });
 
-      if (azureResponse.status === 201) {
-        console.log("Audio uploaded to Azure successfully");
+      await axios.post("/api/speaking", {
+        userId: user.id,
+        exerciseId,
+        audioUrl: uploadUrl.split("?")[0],
+      });
 
-        await axios.post("/api/speaking", {
-          userId: user.id,
-          exerciseId,
-          audioUrl: azureResponse.data.url,
-        });
+      await axios.put("/api/user", {
+        userId: user.id,
+        score: 0,
+        completedSpeakingUUID: exerciseId,
+      });
 
-        alert("Recording uploaded successfully!");
-      } else {
-        console.error("Azure upload failed", azureResponse.data);
-        alert("Failed to upload recording");
-      }
-    } catch (error) {
-      console.error("Error uploading audio:", error);
+      alert("Recording uploaded successfully!");
+      setCompletedSpeakingIds((prev) => [...prev, exerciseId]); // update locally
+      setShowContinue(true);
+      setAudioBlob(null);
+    } catch (error: any) {
+      console.error("Error uploading recording:", error);
+      alert("Upload failed. Check your connection or try again.");
     }
+  };
+
+  const handleBack = () => {
+    router.push("/learn");
   };
 
   const handleContinue = () => {
     router.push("/writing");
   };
 
-  if (loading) return <Loading/>;
+  if (loading) return <Loading />;
 
   return (
     <div className="flex gap-[48px] px-6">
@@ -127,7 +147,6 @@ const SpeakingPage = () => {
         <Header title="Speaking Exercises" />
 
         <div className="space-y-6">
-
           <div className="text-left mb-4">
             <Button onClick={handleBack} size="lg" className="rounded-full" variant={"ghost"}>
               <img src="back.svg" alt="Back" className="w-4 h-4 mr-2" />
@@ -135,55 +154,60 @@ const SpeakingPage = () => {
             </Button>
           </div>
 
-          {speakingExercises.map((exercise) => (
-            <div
-              key={exercise._id}
-              className="p-6 rounded-md"
-            >
-              <h3 className="font-semibold flex justify-center text-customDark">{exercise.title}</h3>
-              <p className="mt-2 text-customDark flex justify-center">{exercise.content}</p>
+          {speakingExercises.map((exercise) => {
+            const alreadyCompleted = completedSpeakingIds.includes(exercise._id);
+            return (
+              <div key={exercise._id} className="p-6 rounded-md">
+                <h3 className="font-semibold flex justify-center text-customDark">{exercise.title}</h3>
+                <p className="mt-2 text-customDark flex justify-center">{exercise.content}</p>
 
-              <div className="mt-4 space-x-4 flex justify-center">
-                {recording ? (
+                <div className="mt-4 space-x-4 flex justify-center">
+                  {recording ? (
+                    <Button onClick={stopRecording} variant="danger">
+                      Stop Recording
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={startRecording}
+                      variant={"secondary"}
+                      disabled={alreadyCompleted || showContinue}
+                    >
+                      Start Recording
+                    </Button>
+                  )}
+
                   <Button
-                  onClick={() => {
-                    stopRecording()
-                  }}
-                    variant="danger"
+                    onClick={() => uploadRecording(exercise._id)}
+                    variant={"primary"}
+                    disabled={!audioBlob || showContinue || alreadyCompleted}
                   >
-                    Stop Recording
+                    {alreadyCompleted ? "Already Submitted" : "Upload Recording"}
                   </Button>
-                ) : (
-                  <Button
-                    onClick={startRecording}
-                    variant={"secondary"}
-                    disabled={showContinue}
-                  >
-                    Start Recording
-                  </Button>
+                </div>
+
+                {audioBlob && (
+                  <div className="mt-4 flex justify-center">
+                    <audio controls src={URL.createObjectURL(audioBlob)} />
+                  </div>
                 )}
 
-                <Button
-                  onClick={() => {
-                    uploadRecording(exercise._id);
-                    setShowContinue(true);
-                  }}
-                  variant={"primary"}
-                  disabled={!audioBlob || showContinue}
-                >
-                  Upload Recording
-                </Button>
+                {alreadyCompleted && (
+                  <p className="text-center text-green-600 mt-2 font-medium">
+                    You’ve already completed this speaking task.
+                  </p>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {showContinue && (
             <div className="mt-6 text-center">
               <p className="text-green-600 font-semibold mb-2">Submission was successful!</p>
-              <Button variant="primary" onClick={handleContinue}> Continue </Button>
+              <Button variant="primary" onClick={handleContinue}>
+                Continue
+              </Button>
             </div>
           )}
-
         </div>
       </FeedWrapper>
     </div>
