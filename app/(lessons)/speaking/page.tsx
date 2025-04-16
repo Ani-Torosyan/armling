@@ -1,6 +1,3 @@
-//TODO: Upload into cloud
-//TODO: Lesson repetition case handeled(no repetition allowed!)
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -16,7 +13,7 @@ interface SpeakingExercise {
   _id: string;
   title: string;
   content: string;
-  point: string; 
+  point: string;
 }
 
 const SpeakingPage = () => {
@@ -28,7 +25,7 @@ const SpeakingPage = () => {
   const [recording, setRecording] = useState<MediaRecorder | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [showContinue, setShowContinue] = useState(false);
-  
+
   useEffect(() => {
     const fetchSpeakingExercises = async () => {
       try {
@@ -52,9 +49,15 @@ const SpeakingPage = () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
+      const chunks: Blob[] = [];
 
       mediaRecorder.ondataavailable = (event) => {
-        setAudioBlob(event.data); 
+        chunks.push(event.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const fullBlob = new Blob(chunks, { type: "audio/webm" });
+        setAudioBlob(fullBlob);
       };
 
       mediaRecorder.start();
@@ -71,55 +74,49 @@ const SpeakingPage = () => {
     }
   };
 
-  const handleBack = () => {
-    router.push("/learn");
-  };
-
   const uploadRecording = async (exerciseId: string) => {
     if (!audioBlob || !user?.id) return;
 
-    const formData = new FormData();
-    const audioFile = new File([audioBlob], `exercise_${exerciseId}_${Date.now()}.webm`, {
-      type: "audio/webm",
-    });
-    formData.append("file", audioFile);
+    const fileName = `exercise_${exerciseId}_${user.id}_${Date.now()}.webm`;
+    const sasToken = process.env.NEXT_PUBLIC_AZURE_SAS_TOKEN;
+    const uploadUrl = `https://armling01.blob.core.windows.net/user-recordings/${fileName}?${sasToken}`;
+
+    const audioFile = new File([audioBlob], fileName, { type: "audio/webm" });
 
     try {
-      const azureResponse = await axios.post(
-        "https://armling01.blob.core.windows.net/user-recordings?sp=rawdl&st=2024-12-10T06:24:09Z&se=2025-01-02T14:24:09Z&spr=https&sv=2022-11-02&sr=c&sig=Lq%2FmPkELpJUsBziABoUlWFn%2FJYCL0vKY6afFDDtnP2w%3D",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${process.env.AZURE_SAS_TOKEN}`,
-          },
-        }
-      );
+      await axios.put(uploadUrl, audioFile, {
+        headers: {
+          "x-ms-blob-type": "BlockBlob",
+          "Content-Type": "audio/webm",
+        },
+      });
 
-      if (azureResponse.status === 201) {
-        console.log("Audio uploaded to Azure successfully");
+      console.log("Uploaded successfully to Azure");
 
-        await axios.post("/api/speaking", {
-          userId: user.id,
-          exerciseId,
-          audioUrl: azureResponse.data.url,
-        });
+      await axios.post("/api/speaking", {
+        userId: user.id,
+        exerciseId,
+        audioUrl: uploadUrl.split("?")[0], // Save clean URL
+      });
 
-        alert("Recording uploaded successfully!");
-      } else {
-        console.error("Azure upload failed", azureResponse.data);
-        alert("Failed to upload recording");
-      }
+      alert("Recording uploaded successfully!");
+      setShowContinue(true);
+      setAudioBlob(null); // Optional: clear after upload
     } catch (error) {
-      console.error("Error uploading audio:", error);
+      console.error("Upload error:", error);
+      alert("Failed to upload recording");
     }
+  };
+
+  const handleBack = () => {
+    router.push("/learn");
   };
 
   const handleContinue = () => {
     router.push("/writing");
   };
 
-  if (loading) return <Loading/>;
+  if (loading) return <Loading />;
 
   return (
     <div className="flex gap-[48px] px-6">
@@ -136,21 +133,13 @@ const SpeakingPage = () => {
           </div>
 
           {speakingExercises.map((exercise) => (
-            <div
-              key={exercise._id}
-              className="p-6 rounded-md"
-            >
+            <div key={exercise._id} className="p-6 rounded-md">
               <h3 className="font-semibold flex justify-center text-customDark">{exercise.title}</h3>
               <p className="mt-2 text-customDark flex justify-center">{exercise.content}</p>
 
               <div className="mt-4 space-x-4 flex justify-center">
                 {recording ? (
-                  <Button
-                  onClick={() => {
-                    stopRecording()
-                  }}
-                    variant="danger"
-                  >
+                  <Button onClick={stopRecording} variant="danger">
                     Stop Recording
                   </Button>
                 ) : (
@@ -164,16 +153,19 @@ const SpeakingPage = () => {
                 )}
 
                 <Button
-                  onClick={() => {
-                    uploadRecording(exercise._id);
-                    setShowContinue(true);
-                  }}
+                  onClick={() => uploadRecording(exercise._id)}
                   variant={"primary"}
                   disabled={!audioBlob || showContinue}
                 >
                   Upload Recording
                 </Button>
               </div>
+
+              {audioBlob && (
+                <div className="mt-4 flex justify-center">
+                  <audio controls src={URL.createObjectURL(audioBlob)} />
+                </div>
+              )}
             </div>
           ))}
 
@@ -183,7 +175,6 @@ const SpeakingPage = () => {
               <Button variant="primary" onClick={handleContinue}> Continue </Button>
             </div>
           )}
-
         </div>
       </FeedWrapper>
     </div>

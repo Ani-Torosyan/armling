@@ -11,6 +11,7 @@ import { StickyWrapper } from "@/components/sticky-wrapper";
 import { Button } from "@/components/ui/button";
 import Loading from "@/app/(main)/loading";
 import { Promo } from "@/components/promo";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 interface Question {
   question: string;
@@ -41,10 +42,12 @@ const ReadingPage = () => {
   const { user } = useClerk();
   const router = useRouter();
 
-  const [exercise, setExercise] = useState<ReadingExercise | null>(null);
+  const [exercises, setExercises] = useState<ReadingExercise[]>([]);
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [userAnswers, setUserAnswers] = useState<(number | null)[]>([]);
-  const [answerStatuses, setAnswerStatuses] = useState<("correct" | "incorrect" | null)[]>([]);
+  const [userAnswers, setUserAnswers] = useState<(number | null)[][]>([]);
+  const [answerStatuses, setAnswerStatuses] = useState<(("correct" | "incorrect" | null)[])[]>([]);
   const [userData, setUserData] = useState<User | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
@@ -52,7 +55,9 @@ const ReadingPage = () => {
     const fetchExercise = async () => {
       try {
         const { data } = await axios.get("/api/reading");
-        setExercise(data[0]);
+        setExercises(data);
+        setUserAnswers(data.map((ex: { questions: string | any[]; }) => new Array(ex.questions.length).fill(null)));
+        setAnswerStatuses(data.map((ex: { questions: string | any[]; }) => new Array(ex.questions.length).fill(null)));
       } catch (error) {
         console.error("Error fetching exercise:", error);
       } finally {
@@ -83,14 +88,15 @@ const ReadingPage = () => {
     fetchUserData();
   }, [user]);
 
-  const handleAnswerSubmit = (index: number, optionIndex: number) => {
-    if (!exercise) return;
+  const currentExercise = exercises[currentExerciseIndex];
+  const currentQuestion = currentExercise?.questions[currentQuestionIndex];
 
-    setUserAnswers((prev) => {
-      const updated = [...prev];
-      updated[index] = optionIndex;
-      return updated;
-    });
+  const handleAnswerSubmit = (optionIndex: number) => {
+    if (!currentExercise) return;
+
+    const updatedAnswers = [...userAnswers];
+    updatedAnswers[currentExerciseIndex][currentQuestionIndex] = optionIndex;
+    setUserAnswers(updatedAnswers);
   };
 
   const handleSubmitAllAnswers = async () => {
@@ -98,34 +104,35 @@ const ReadingPage = () => {
       router.push("/shop");
       return;
     }
-  
-    if (!exercise || !userData) return;
-  
-    const statuses = exercise.questions.map((q, index) => {
-      const userAnswer = userAnswers[index];
-      if (userAnswer == null || userAnswer === undefined) return "incorrect";
-      const option = q.options[userAnswer];
+
+    if (!currentExercise || !userData) return;
+
+    const statuses = currentExercise.questions.map((q, index) => {
+      const userAnswer = userAnswers[currentExerciseIndex][index];
+      const option = q.options[userAnswer!];
       if (!option) return "incorrect";
       return option.trim().toLowerCase() === q.correctAnswer.trim().toLowerCase()
         ? "correct"
         : "incorrect";
     });
-  
-    setAnswerStatuses(statuses); 
+
+    const updatedStatuses = [...answerStatuses];
+    updatedStatuses[currentExerciseIndex] = statuses;
+    setAnswerStatuses(updatedStatuses);
     setSubmitted(true);
-  
+
     const allCorrectNow = statuses.every(status => status === "correct");
-  
+
     if (allCorrectNow) {
-      if (!userData.completedReadingExercises.includes(exercise.uuid)) {
-        const updatedScore = userData.userExp + exercise.point;
+      if (!userData.completedReadingExercises.includes(currentExercise.uuid)) {
+        const updatedScore = userData.userExp + currentExercise.point;
         try {
           await axios.put("/api/user", {
             userId: user?.id,
             score: updatedScore,
-            completedReadingUUID: exercise.uuid,
+            completedReadingUUID: currentExercise.uuid,
           });
-  
+
           setUserData(prev =>
             prev ? { ...prev, userExp: updatedScore } : prev
           );
@@ -134,7 +141,6 @@ const ReadingPage = () => {
         }
       }
     } else {
-      console.log("Some answers are incorrect, no points awarded.");
       try {
         await axios.put("/api/decrement-hearts", {
           userId: user?.id,
@@ -146,16 +152,25 @@ const ReadingPage = () => {
         console.error("Error updating user hearts:", error);
       }
     }
-  }; 
-
-  const handleContinue = () => {
-    router.push("/listening");
   };
 
+  const handleContinue = () => router.push("/listening");
+
   const handleRetry = () => {
-    setUserAnswers((prev) => prev.map((answer, idx) => (answerStatuses[idx] === "incorrect" ? null : answer)));
-    setAnswerStatuses((prev) => prev.map((status) => (status === "incorrect" ? null : status)));
+    const newAnswers = [...userAnswers];
+    const newStatuses = [...answerStatuses];
+
+    currentExercise.questions.forEach((_, idx) => {
+      if (newStatuses[currentExerciseIndex][idx] === "incorrect") {
+        newAnswers[currentExerciseIndex][idx] = null;
+        newStatuses[currentExerciseIndex][idx] = null;
+      }
+    });
+
+    setUserAnswers(newAnswers);
+    setAnswerStatuses(newStatuses);
     setSubmitted(false);
+    setCurrentQuestionIndex(0);
   };
 
   const handleBackToLearn = () => router.push("/learn");
@@ -179,70 +194,111 @@ const ReadingPage = () => {
         <Button onClick={handleBackToLearn} size="lg" className="rounded-full mb-4" variant="ghost">
           <img src="back.svg" alt="Back" className="w-4 h-4 mr-2" /> Back to Learn
         </Button>
-        <div className="text-l mb-4 text-justify text-customDark">
-        {exercise?.passage?.split('\n').map((line, index) => (
-          <React.Fragment key={index}>
-            {line}
-            <br />
-          </React.Fragment>
-        ))}
+        <div className="text-l mb-4 text-justify text-customDark whitespace-pre-line">
+          {currentExercise?.passage}
         </div>
 
         <div className="w-full flex flex-col items-center text-customDark">
-          <h3 className="font-medium mb-4">{exercise?.task}</h3>
-          {exercise?.questions.map((q, index) => (
-            <div key={index} className="my-2">
-              <p className="text-center mb-2">{q.question}</p>
-              <div className="flex justify-center items-center space-x-4">
-                {q.options.map((option, i) => (
-                  <Button
-                    variant={
-                      userAnswers[index] === i
-                        ? submitted
-                          ? answerStatuses[index] === "correct"
-                            ? "correct" 
-                            : "danger" 
-                          : "secondary"
-                        : "default"
+          <h3 className="font-medium mb-4">{currentExercise?.task}</h3>
+          {currentQuestion && (
+            <div className="w-full max-w-xl text-center border rounded-xl p-6 shadow-md">
+              <p className="mb-4 text-lg font-medium">{currentQuestion.question}</p>
+              <div className="flex flex-col gap-2">
+                {currentQuestion.options.map((option, i) => {
+                  const isSelected = userAnswers[currentExerciseIndex][currentQuestionIndex] === i;
+                  const isSubmitted = submitted;
+                  const status = answerStatuses[currentExerciseIndex][currentQuestionIndex];
+                  let buttonStyle = "default";
+                  if (isSelected) {
+                    if (!isSubmitted) {
+                      buttonStyle = "secondary";
+                    } else {
+                      buttonStyle = status === "correct" ? "correct" : "danger";
                     }
-                    key={i}
-                    onClick={() => handleAnswerSubmit(index, i)}
-                    className={`${
-                      submitted
-                        ? answerStatuses[index] !== null && userAnswers[index] === i
-                          ? answerStatuses[index] === "correct"
-                            ? "bg-green-500" 
-                            : "bg-red-500"   
-                          : ""
-                        : ""
-                    }`}
-                    disabled={submitted}
-                  >
-                    {option}
-                  </Button>  
-                ))}
+                  }
+                  return (
+                    <Button
+  key={i}
+  onClick={() => handleAnswerSubmit(i)}
+  variant={buttonStyle as
+    | "correct"
+    | "default"
+    | "primary"
+    | "primaryOutline"
+    | "secondary"
+    | "secondaryOutline"
+    | "danger"
+    | "dangerOutline"
+    | "super"
+    | "superOutline"
+    | "ghost"
+    | "sidebar"
+    | "sidebarOutline"}
+  disabled={submitted}
+  className={
+    submitted && isSelected
+      ? status === "correct"
+        ? "bg-green-500"
+        : "bg-red-500"
+      : ""
+  }
+>
+  {option}
+</Button>
+
+                  );
+                })}
               </div>
-              {submitted && userAnswers[index] !== null && (
-                <p className={`mt-2 text-center ${answerStatuses[index] === "correct" ? "text-green-500" : "text-red-500"}`}>
-                  {answerStatuses[index] === "correct" ? "Ճիշտ է!" : "Սխալ է. Փորձեք նորից!"}
+              {submitted && (
+                <p
+                  className={`mt-4 ${
+                    answerStatuses[currentExerciseIndex][currentQuestionIndex] === "correct"
+                      ? "text-green-500"
+                      : "text-red-500"
+                  }`}
+                >
+                  {answerStatuses[currentExerciseIndex][currentQuestionIndex] === "correct"
+                    ? "Ճիշտ է!"
+                    : "Սխալ է. Փորձեք նորից!"}
                 </p>
               )}
             </div>
-          ))}
+          )}
+
+          <div className="flex items-center justify-center gap-4 mt-6">
+            <Button
+              variant="ghost"
+              onClick={() => setCurrentQuestionIndex((prev) => Math.max(0, prev - 1))}
+              disabled={currentQuestionIndex === 0}
+            >
+              <ArrowLeft className="mr-2" /> Previous
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() =>
+                setCurrentQuestionIndex((prev) =>
+                  Math.min((currentExercise?.questions.length || 1) - 1, prev + 1)
+                )
+              }
+              disabled={currentQuestionIndex === (currentExercise?.questions.length || 1) - 1}
+            >
+              Next <ArrowRight className="ml-2" />
+            </Button>
+          </div>
 
           {!submitted && (
             <Button variant="primary" onClick={handleSubmitAllAnswers} className="mt-6">
-              Submit
+              Submit All
             </Button>
           )}
 
-          {submitted && answerStatuses.includes("incorrect") && (
+          {submitted && answerStatuses[currentExerciseIndex].includes("incorrect") && (
             <Button variant="primary" onClick={handleRetry} className="mt-6">
               Try Again
             </Button>
           )}
 
-          {submitted && !answerStatuses.includes("incorrect") && (
+          {submitted && !answerStatuses[currentExerciseIndex].includes("incorrect") && (
             <Button variant="primary" onClick={handleContinue} className="mt-6">
               Continue
             </Button>
