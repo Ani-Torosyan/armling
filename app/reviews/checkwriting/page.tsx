@@ -31,7 +31,7 @@ const CheckWritingPage = () => {
 
       if (response.ok) {
         alert("Feedback submitted successfully!");
-        router.push("/reviews/writing-review");
+        router.push("/writing-review"); // Navigate back to /writing-review
       } else {
         const errorData = await response.json();
         console.error("Failed to submit feedback:", errorData.message);
@@ -75,7 +75,7 @@ const CheckWritingPage = () => {
         </button>
         <button
           className="px-4 py-2 bg-gray-500 text-white rounded"
-          onClick={() => router.back()}
+          onClick={() => router.push("/writing-review")} // Explicitly navigate to /writing-review
         >
           Back
         </button>

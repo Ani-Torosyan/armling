@@ -8,8 +8,8 @@ export async function GET() {
     // Connect to the database
     await connect();
 
-    // Fetch all writing submissions, sorted by creation date (newest first)
-    const submissions = await WritingSubmission.find().sort({ createdAt: -1 });
+    // Fetch only unchecked writing submissions
+    const submissions = await WritingSubmission.find({ checked: false }).sort({ createdAt: -1 });
 
     // Fetch user nicknames and attach them to submissions
     const submissionsWithNicknames = await Promise.all(

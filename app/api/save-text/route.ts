@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     const blockBlobClient = containerClient.getBlockBlobClient(filename);
     await blockBlobClient.upload(text, Buffer.byteLength(text));
 
-    const fileUrl = `https://${AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${containerName}/${blobName}`;
+    const fileUrl = `https://${AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/${containerName}/${filename}`;
 
     // Debugging: Log the data to be saved
     console.log("Preparing to save WritingSubmission:", { clerkId, exerciseUUID, fileUrl });
