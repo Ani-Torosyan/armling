@@ -15,8 +15,6 @@ const reviewsPage = () => {
 
 export default reviewsPage;
 
-//little test
-
 
 
 
