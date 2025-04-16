@@ -43,12 +43,12 @@ export async function POST(request: Request) {
     );
 
     const containerName = "user-writing";
-    const blobName = `${clerkId}-${Date.now()}.txt`;
+    const filename = `${clerkId}.txt`;
     const containerClient = blobServiceClient.getContainerClient(containerName);
 
     await containerClient.createIfNotExists();
 
-    const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+    const blockBlobClient = containerClient.getBlockBlobClient(filename);
     await blockBlobClient.upload(text, Buffer.byteLength(text));
 
     // Add exercise UUID to user's writing array
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       message: "Text saved successfully.",
-      blobName,
+      filename,
       containerName,
     });
   } catch (error) {
