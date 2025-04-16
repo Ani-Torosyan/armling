@@ -103,48 +103,40 @@ const WritingPage = () => {
     <div className="gap-[48px] px-6">
       <FeedWrapper>
         <Header title="Writing Exercise" />
-        <Button onClick={handleBackToLearn} size="lg" className="rounded-full" variant={"ghost"}>
+        <Button onClick={handleBackToLearn} size="lg" className="rounded-full" variant="ghost">
           <img src="back.svg" alt="Back" className="w-4 h-4 mr-2" />
           Back to Learn
         </Button>
 
-        <div className="w-full flex flex-col">
-          <div className="my-4">
-            <h3 className="font-semibold flex justify-center text-customDark">
-              {exercise.title}
-            </h3>
-            <p className="mt-2 text-customDark flex justify-center">
-              {exercise.task}
-            </p>
+        {!submitted ? (
+          <div className="w-full flex flex-col">
+            <div className="my-4">
+              <h3 className="font-semibold flex justify-center text-customDark">{exercise.title}</h3>
+              <p className="mt-2 text-customDark flex justify-center">{exercise.task}</p>
 
-            <div className="mt-4 flex justify-center">
-              <textarea
-                placeholder="Type your answer here"
-                className={`border p-4 w-full max-w-lg resize-y ${
-                  submitted ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""
-                }`}
-                rows={3}
-                disabled={submitted}
-              />
+              <div className="mt-4 flex justify-center">
+                <textarea
+                  placeholder="Type your answer here"
+                  className="border p-4 w-full max-w-lg resize-y"
+                  rows={3}
+                />
+              </div>
+
+              <div className="mt-6 flex justify-center">
+                <Button variant="primary" onClick={handleSubmitAll}>
+                  Submit
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </FeedWrapper>
-
-      <div className="mt-6 flex flex-col items-center w-full">
-        <Button
-          variant="primary"
-          onClick={handleSubmitAll}
-          disabled={submitted}
-        >
-          Submit
-        </Button>
-        {!submitted && (
-          <p className="text-green-600 font-semibold mt-6 text-center text-lg">
-            You have already submitted this exercise.
-          </p>
+        ) : (
+          <div className="w-full flex justify-center mt-10">
+            <p className="text-green-600 font-semibold">
+              You have already submitted this writing exercise.
+            </p>
+          </div>
         )}
-      </div>
+      </FeedWrapper>
     </div>
   );
 };
