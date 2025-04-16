@@ -188,6 +188,11 @@ const ReadingPage = () => {
   if (!userData) return <div className="text-center text-customDark">Something went wrong. Please reload the page.</div>;
 
   const currentExercise = exercises[currentExerciseIndex];
+  const allExercisesCompletedCorrectly = exercises.every((exercise, exIndex) =>
+    submittedIndexes.includes(exIndex) &&
+    answerStatuses[exIndex]?.every(status => status === "correct")
+  );
+  
 
   return (
     <div className="flex flex-row-reverse gap-[48px] px-6">
@@ -287,7 +292,14 @@ const ReadingPage = () => {
               </Button>
             </div>
           </div>
+          
         )}
+        {allExercisesCompletedCorrectly && (
+          <div className="flex justify-center mt-6">
+             <Button variant="primary" onClick={() => router.push("/listening")}> Continue </Button>
+             </div>
+            )}
+
       </FeedWrapper>
     </div>
   );
