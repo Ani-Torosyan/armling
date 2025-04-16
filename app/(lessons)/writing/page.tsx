@@ -29,41 +29,36 @@ const WritingPage = () => {
   const router = useRouter();
 
   const [exercise, setExercise] = useState<WritingExercise | null>(null);
-  const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<User | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchExercise = async () => {
       try {
-        const response = await axios.get("/api/writing");
-        setExercise(response.data.WritingExercises[0]);
-      } catch (error) {
-        console.error("Error fetching exercise:", error);
+        const res = await axios.get("/api/writing");
+        setExercise(res.data.WritingExercises[0]);
+      } catch (err) {
+        console.error("Error fetching exercise:", err);
       }
     };
-
     fetchExercise();
   }, []);
 
   useEffect(() => {
     const fetchUserData = async () => {
+      if (!user?.id || !exercise?.uuid) return;
+
       try {
-        if (!user?.id || !exercise?.uuid) return;
+        const res = await axios.get(`/api/user?userId=${user.id}`);
+        const userInfo = res.data;
+        setUserData(userInfo);
 
-        const response = await axios.get(`/api/user?userId=${user.id}`);
-        if (response.status === 200) {
-          const userInfo = response.data;
-          setUserData(userInfo);
-
-          if (userInfo.writing?.includes(exercise.uuid)) {
-            setSubmitted(true);
-          }
-        } else {
-          console.error("Error fetching user data");
+        if (userInfo.writing?.includes(exercise.uuid)) {
+          setSubmitted(true);
         }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
+      } catch (err) {
+        console.error("Error fetching user data:", err);
       } finally {
         setLoading(false);
       }
@@ -75,7 +70,7 @@ const WritingPage = () => {
   }, [user, exercise]);
 
   const handleSubmitAll = async () => {
-    const textarea = document.querySelector("textarea") as HTMLTextAreaElement;
+    const textarea = document.querySelector("textarea");
     const text = textarea?.value || "";
 
     if (!text.trim()) return;
@@ -92,9 +87,6 @@ const WritingPage = () => {
 
       if (response.ok) {
         setSubmitted(true);
-      } else {
-        const errorData = await response.json();
-        console.error("Failed to save text:", errorData.message);
       }
     } catch (error) {
       console.error("Error submitting text:", error);
@@ -105,7 +97,7 @@ const WritingPage = () => {
     router.push("/learn");
   };
 
-  if (loading || !exercise || !userData) return <Loading />;
+  if (loading || !exercise) return <Loading />;
 
   return (
     <div className="gap-[48px] px-6">
@@ -147,9 +139,11 @@ const WritingPage = () => {
         >
           Submit
         </Button>
-        <p className="text-green-600 font-semibold mt-6 text-center text-lg">
-                You have already submitted this exercise.
-              </p>
+        {!submitted && (
+          <p className="text-green-600 font-semibold mt-6 text-center text-lg">
+            You have already submitted this exercise.
+          </p>
+        )}
       </div>
     </div>
   );
