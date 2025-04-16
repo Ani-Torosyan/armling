@@ -21,7 +21,7 @@ interface WritingExercise {
 type User = {
   userExp: number;
   userHearts: number;
-  writing: string[]; 
+  writing: string[];
 };
 
 const WritingPage = () => {
@@ -40,8 +40,6 @@ const WritingPage = () => {
         setExercise(response.data.WritingExercises[0]);
       } catch (error) {
         console.error("Error fetching exercise:", error);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -51,19 +49,23 @@ const WritingPage = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        if (!user?.id) return;
+        if (!user?.id || !exercise?.uuid) return;
+
         const response = await axios.get(`/api/user?userId=${user.id}`);
         if (response.status === 200) {
-          setUserData(response.data);
+          const userInfo = response.data;
+          setUserData(userInfo);
 
-          if (response.data.writing?.includes(exercise?.uuid)) {
-            setSubmitted(true); 
+          if (userInfo.writing?.includes(exercise.uuid)) {
+            setSubmitted(true);
           }
         } else {
           console.error("Error fetching user data");
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -73,13 +75,10 @@ const WritingPage = () => {
   }, [user, exercise]);
 
   const handleSubmitAll = async () => {
-    const textarea = document.querySelector("textarea");
+    const textarea = document.querySelector("textarea") as HTMLTextAreaElement;
     const text = textarea?.value || "";
 
-    if (!text.trim()) {
-      alert("Please write something before submitting.");
-      return;
-    }
+    if (!text.trim()) return;
 
     try {
       const response = await fetch("/api/save-text", {
@@ -96,11 +95,9 @@ const WritingPage = () => {
       } else {
         const errorData = await response.json();
         console.error("Failed to save text:", errorData.message);
-        alert(errorData.message || "An error occurred. Please try again.");
       }
     } catch (error) {
       console.error("Error submitting text:", error);
-      alert("An error occurred. Please try again.");
     }
   };
 
@@ -108,53 +105,62 @@ const WritingPage = () => {
     router.push("/learn");
   };
 
-  if (loading) return <Loading />;
-
-  if (!exercise) {
-    return <div>No exercise found</div>;
-  }
-
-  if (!userData) {
-    return <Loading />;
-  }
+  if (loading || !exercise || !userData) return <Loading />;
 
   return (
     <div className="gap-[48px] px-6">
       <FeedWrapper>
         <Header title="Writing Exercise" />
         <Button onClick={handleBackToLearn} size="lg" className="rounded-full" variant={"ghost"}>
-            <img src="back.svg" alt="Back" className="w-4 h-4 mr-2" />
-            Back to Learn
+          <img src="back.svg" alt="Back" className="w-4 h-4 mr-2" />
+          Back to Learn
         </Button>
+
         <div className="w-full flex flex-col">
-            <div className="my-4">
-            <h3 className="font-semibold flex justify-center text-customDark">{exercise.title}</h3>
-            <p className="mt-2 text-customDark flex justify-center">{exercise.task}</p>
+          <div className="my-4">
+            <h3 className="font-semibold flex justify-center text-customDark">
+              {exercise.title}
+            </h3>
+            <p className="mt-2 text-customDark flex justify-center">
+              {exercise.task}
+            </p>
+
+            {/* {submitted && (
+              <p className="text-green-600 font-semibold mt-6 text-center text-lg">
+                You have already submitted this exercise.
+              </p>
+            )} */}
+
             <div className="mt-4 flex justify-center">
               <textarea
                 placeholder="Type your answer here"
-                className="border p-4 w-full max-w-lg resize-y"
-                rows={3} 
-                disabled={submitted}
+                className={`border p-4 w-full max-w-lg resize-y ${
+                  submitted ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""
+                }`}
+                rows={3}
+                disabled={true}
               />
             </div>
           </div>
         </div>
       </FeedWrapper>
+
       <div className="mt-6 flex flex-col items-center w-full">
-      {!submitted ? (
-        <Button 
-          variant="primary" 
-          onClick={handleSubmitAll} 
-          disabled={submitted}
+        <button
+          className={`px-6 py-2 rounded-lg font-semibold ${
+            submitted
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-orange-600 text-white hover:bg-orange-700"
+          } transition-none duration-0`}
+          onClick={handleSubmitAll}
+          disabled={true}
         >
           Submit
-        </Button>
-      ) : (
-        <p className="text-green-600 font-semibold">Submission was successful!</p>
-      )}
-    </div>
-
+        </button>
+        <p className="text-green-600 font-semibold mt-6 text-center text-lg">
+                You have already submitted this exercise.
+              </p>
+      </div>
     </div>
   );
 };
