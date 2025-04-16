@@ -76,13 +76,15 @@ const SpeakingPage = () => {
 
   const uploadRecording = async (exerciseId: string) => {
     if (!audioBlob || !user?.id) return;
-
+  
     const fileName = `exercise_${exerciseId}_${user.id}_${Date.now()}.webm`;
     const sasToken = process.env.NEXT_PUBLIC_AZURE_SAS_TOKEN;
     const uploadUrl = `https://armling01.blob.core.windows.net/user-recordings/${fileName}?${sasToken}`;
+    console.log("Upload URL:", uploadUrl);
 
+  
     const audioFile = new File([audioBlob], fileName, { type: "audio/webm" });
-
+  
     try {
       await axios.put(uploadUrl, audioFile, {
         headers: {
@@ -90,23 +92,29 @@ const SpeakingPage = () => {
           "Content-Type": "audio/webm",
         },
       });
-
+  
       console.log("Uploaded successfully to Azure");
-
+  
       await axios.post("/api/speaking", {
         userId: user.id,
         exerciseId,
-        audioUrl: uploadUrl.split("?")[0], // Save clean URL
+        audioUrl: uploadUrl.split("?")[0],
       });
-
+  
       alert("Recording uploaded successfully!");
       setShowContinue(true);
-      setAudioBlob(null); // Optional: clear after upload
-    } catch (error) {
-      console.error("Upload error:", error);
-      alert("Failed to upload recording");
+      setAudioBlob(null);
+    } catch (error: any) {
+      if (axios.isAxiosError(error)) {
+        console.error("Axios error details:", error.toJSON());
+      } else {
+        console.error("Unexpected error:", error);
+      }
+    
+      alert("Failed to upload recording. Check CORS settings and SAS token.");
     }
   };
+  
 
   const handleBack = () => {
     router.push("/learn");
@@ -124,7 +132,6 @@ const SpeakingPage = () => {
         <Header title="Speaking Exercises" />
 
         <div className="space-y-6">
-
           <div className="text-left mb-4">
             <Button onClick={handleBack} size="lg" className="rounded-full" variant={"ghost"}>
               <img src="back.svg" alt="Back" className="w-4 h-4 mr-2" />
@@ -172,7 +179,9 @@ const SpeakingPage = () => {
           {showContinue && (
             <div className="mt-6 text-center">
               <p className="text-green-600 font-semibold mb-2">Submission was successful!</p>
-              <Button variant="primary" onClick={handleContinue}> Continue </Button>
+              <Button variant="primary" onClick={handleContinue}>
+                Continue
+              </Button>
             </div>
           )}
         </div>
