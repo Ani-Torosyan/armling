@@ -80,7 +80,6 @@ const WritingPage = () => {
       alert("Please write something before submitting.");
       return;
     }
-
     try {
       const response = await fetch("/api/save-text", {
         method: "POST",
