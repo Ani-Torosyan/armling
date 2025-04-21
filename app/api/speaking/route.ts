@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import SpeakingSubmission from "@/modals/speaking-submission.modal";
 import { MongoClient } from "mongodb";
 
 const uri = process.env.MONGODB_URL || "";
@@ -16,6 +17,10 @@ export async function GET() {
         await client.connect();
 
         const database = client.db("ArmLing");
+
+        if (!database) {
+            throw new Error("Database connection is undefined");
+        }
 
         const SpeakingExerciseCollection = database.collection("SpeakingExercise");
         const SpeakingExercise = await SpeakingExerciseCollection.find({}).toArray();
@@ -52,19 +57,19 @@ export async function POST(request: Request) {
         }
 
         const client = new MongoClient(uri);
+        if (!client.connect) {
+            const client = new MongoClient(uri);
         await client.connect();
+        }
 
-        const database = client.db("ArmLing");
-
-        const UserRecordingsCollection = database.collection("UserRecordings");
-        await UserRecordingsCollection.insertOne({
-            userId,
-            exerciseId,
-            audioUrl,
-            createdAt: new Date(),
+        // Save the submission using the SpeakingSubmission model
+        const newSubmission = new SpeakingSubmission({
+            clerkId: userId,
+            exerciseUUID: exerciseId,
+            fileUrl: audioUrl,
         });
 
-        await client.close();
+        await newSubmission.save();
 
         return NextResponse.json({ message: "Recording metadata saved successfully" });
     } catch (error) {

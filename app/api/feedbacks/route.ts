@@ -1,36 +1,69 @@
 import { NextResponse } from "next/server";
-import { connect } from "@/db";
-import FeedbackWriting from "@/modals/FeedbackWriting.modal";
-import WritingSubmission from "@/modals/writing-submission.modal";
+import mongoose from "mongoose";
+import FeedbackSpeaking from "@/modals/FeedbackSpeaking.modal";
+import FeedbackWriting from "@/modals/FeedbackWriting.modal"; // Assuming you have a FeedbackWriting model
+import SpeakingSubmission from "@/modals/speaking-submission.modal";
+import WritingSubmission from "@/modals/writing-submission.modal"; // Assuming you have a WritingSubmission model
+
+const uri = process.env.MONGODB_URL || "";
 
 export async function GET(request: Request) {
-  try {
-    await connect();
+  if (!uri) {
+    return NextResponse.json(
+      { error: "MongoDB URL is not defined" },
+      { status: 500 }
+    );
+  }
 
+  try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
 
     if (!userId) {
-      return NextResponse.json({ message: "User ID is required." }, { status: 400 });
+      return NextResponse.json(
+        { error: "User ID is required" },
+        { status: 400 }
+      );
     }
 
-    // Fetch feedbacks for the user's submissions
-    const feedbacks = await FeedbackWriting.find()
-      .populate({
-        path: "submissionId",
-        match: { clerkId: userId }, // Match submissions belonging to the current user
-        select: "exerciseUUID fileUrl exerciseName", // Include exerciseName
-      })
-      .exec();
+    if (!mongoose.connection.readyState) {
+      await mongoose.connect(uri);
+    }
 
-    // Filter out feedbacks where the submissionId is null (not matching the user)
-    const filteredFeedbacks = feedbacks.filter((feedback) => feedback.submissionId);
+    // Find checked speaking submissions for the user
+    const speakingSubmissions = await SpeakingSubmission.find({
+      clerkId: userId,
+      checked: true,
+    });
 
-    return NextResponse.json(filteredFeedbacks, { status: 200 });
+    const speakingSubmissionIds = speakingSubmissions.map((submission) => submission._id);
+
+    // Find feedbacks for the checked speaking submissions
+    const speakingFeedbacks = await FeedbackSpeaking.find({
+      submissionId: { $in: speakingSubmissionIds },
+    }).populate("submissionId");
+
+    // Find checked writing submissions for the user
+    const writingSubmissions = await WritingSubmission.find({
+      clerkId: userId,
+      checked: true,
+    });
+
+    const writingSubmissionIds = writingSubmissions.map((submission) => submission._id);
+
+    // Find feedbacks for the checked writing submissions
+    const writingFeedbacks = await FeedbackWriting.find({
+      submissionId: { $in: writingSubmissionIds },
+    }).populate("submissionId");
+
+    // Combine speaking and writing feedbacks
+    const feedbacks = [...speakingFeedbacks, ...writingFeedbacks];
+
+    return NextResponse.json(feedbacks);
   } catch (error) {
     console.error("Error fetching feedbacks:", error);
     return NextResponse.json(
-      { message: "Failed to fetch feedbacks.", error: error instanceof Error ? error.message : "Unknown error" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
