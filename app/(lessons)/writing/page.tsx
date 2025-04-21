@@ -18,21 +18,16 @@ interface WritingExercise {
   uuid: string;
 }
 
-type User = {
-  userExp: number;
-  userHearts: number;
-  writing: string[]; 
-};
-
 const WritingPage = () => {
   const { user } = useClerk();
   const router = useRouter();
 
   const [exercise, setExercise] = useState<WritingExercise | null>(null);
   const [loading, setLoading] = useState(true);
-  const [userData, setUserData] = useState<User | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
 
+  // Fetch the exercise details
   useEffect(() => {
     const fetchExercise = async () => {
       try {
@@ -48,27 +43,40 @@ const WritingPage = () => {
     fetchExercise();
   }, []);
 
+  // Fetch submission and feedback status
   useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchSubmissionAndFeedback = async () => {
       try {
-        if (!user?.id) return;
-        const response = await axios.get(`/api/user?userId=${user.id}`);
-        if (response.status === 200) {
-          setUserData(response.data);
+        if (!user?.id || !exercise?.uuid) return;
 
-          if (response.data.writing?.includes(exercise?.uuid)) {
-            setSubmitted(true); 
+        const response = await axios.get(
+          `/api/user-submission-feedback?userId=${user.id}&exerciseUUID=${exercise.uuid}`
+        );
+
+        if (response.status === 200) {
+          const { submission, feedback } = response.data;
+
+          if (submission) {
+            setSubmitted(true);
           }
-        } else {
-          console.error("Error fetching user data");
+
+          if (feedback) {
+            setFeedback(feedback.feedback);
+          }
         }
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
+          // No submission found, handle gracefully
+          setSubmitted(false);
+          setFeedback(null);
+        } else {
+          console.error("Error fetching submission and feedback:", error);
+        }
       }
     };
 
     if (user && exercise) {
-      fetchUserData();
+      fetchSubmissionAndFeedback();
     }
   }, [user, exercise]);
 
@@ -113,27 +121,23 @@ const WritingPage = () => {
     return <div>No exercise found</div>;
   }
 
-  if (!userData) {
-    return <Loading />;
-  }
-
   return (
     <div className="gap-[48px] px-6">
       <FeedWrapper>
         <Header title="Writing Exercise" />
         <Button onClick={handleBackToLearn} size="lg" className="rounded-full" variant={"ghost"}>
-            <img src="back.svg" alt="Back" className="w-4 h-4 mr-2" />
-            Back to Learn
+          <img src="back.svg" alt="Back" className="w-4 h-4 mr-2" />
+          Back to Learn
         </Button>
         <div className="w-full flex flex-col">
-            <div className="my-4">
+          <div className="my-4">
             <h3 className="font-semibold flex justify-center text-customDark">{exercise.title}</h3>
             <p className="mt-2 text-customDark flex justify-center">{exercise.task}</p>
             <div className="mt-4 flex justify-center">
               <textarea
                 placeholder="Type your answer here"
                 className="border p-4 w-full max-w-lg resize-y"
-                rows={3} 
+                rows={3}
                 disabled={submitted}
               />
             </div>
@@ -141,19 +145,29 @@ const WritingPage = () => {
         </div>
       </FeedWrapper>
       <div className="mt-6 flex flex-col items-center w-full">
-      {!submitted ? (
-        <Button 
-          variant="primary" 
-          onClick={handleSubmitAll} 
-          disabled={submitted}
-        >
-          Submit
-        </Button>
-      ) : (
-        <p className="text-green-600 font-semibold">Submission was successful!</p>
-      )}
-    </div>
-
+        {submitted ? (
+          <>
+            <p className="text-green-600 font-semibold">Thanks for submission of this exercise!</p>
+            {feedback ? (
+              <>
+                <Button
+                  variant="secondary"
+                  onClick={() => router.push("/review")}
+                  className="mt-4"
+                >
+                  View Review
+                </Button>
+              </>
+            ) : (
+              <p className="text-gray-600 mt-2">No feedback available yet.</p>
+            )}
+          </>
+        ) : (
+          <Button variant="primary" onClick={handleSubmitAll} disabled={submitted}>
+            Submit
+          </Button>
+        )}
+      </div>
     </div>
   );
 };
