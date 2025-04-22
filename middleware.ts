@@ -1,7 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 
-const isTeacherRoute = createRouteMatcher(['/writing-review'])
+const isTeacherRoute = createRouteMatcher(['/writing-review', '/speaking-review'])
 
 const isPublicRoute = createRouteMatcher(["/", "/api/webhooks", "/api/data", "/teachers", "/about-us", "/api/stripe-webhooks"]);
 

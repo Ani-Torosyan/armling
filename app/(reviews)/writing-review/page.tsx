@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "../../(main)/header";
 import { Button } from "@/components/ui/button";
+import { FeedWrapper } from "@/components/feed-wrapper";
 
 const WritingSubmissionsPage = () => {
   const [submissions, setSubmissions] = useState([]);
@@ -56,11 +57,12 @@ const WritingSubmissionsPage = () => {
   };
 
   return (
-    <>
+    <div className="flex flex-row-reverse gap-[48px] px-6">
+    <FeedWrapper>
       <Header title="Writing Reviews" />
-      <div className="space-y-4 text-customDark border-2 rounded shadow border-customShade mt-4">
+      <div className="space-y-6 text-customDark mt-4">
         {submissions.length === 0 ? (
-          <p className="p-4 text-center text-gray-600">No submissions available</p>
+          <p className="p-4 text-center text-customDark">No submissions available or loading, please wait.</p>
           
         ) : (
           submissions.map((submission: any) => (
@@ -79,14 +81,15 @@ const WritingSubmissionsPage = () => {
                   variant="secondary"
                   onClick={() => handleView(submission._id, submission.fileUrl)}
                 >
-                  View
+                  Check Writing
                 </Button>
               </div>
             </div>
           ))
         )}
       </div>
-    </>
+    </FeedWrapper>
+    </div>
   );
 };
 

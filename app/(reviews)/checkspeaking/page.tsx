@@ -39,10 +39,6 @@ const CheckSpeakingPage = () => {
         return;
       }
 
-      
-
-      
-
       alert("Feedback submitted and submission marked as checked!");
       router.push("/speaking-review"); // Navigate back to /speaking-review
     } catch (error) {

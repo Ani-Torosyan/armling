@@ -20,7 +20,6 @@ interface SpeakingSubmission {
 
 const SpeakingReviewPage = () => {
   const [submissions, setSubmissions] = useState<SpeakingSubmission[]>([]);
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -48,8 +47,6 @@ const SpeakingReviewPage = () => {
         setSubmissions(enrichedSubmissions);
       } catch (error) {
         console.error("Error fetching submissions:", error);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -67,26 +64,22 @@ const SpeakingReviewPage = () => {
     router.push(`/checkspeaking?id=${submissionId}&fileUrl=${encodeURIComponent(fileUrl)}`);
   };
 
-  if (loading) return <p>Loading...</p>;
-
   return (
     <div className="flex flex-row-reverse gap-[48px] px-6">
       <FeedWrapper>
         <Header title="Speaking Reviews" />
-        <div className="space-y-6">
+        <div className="space-y-6 text-customDark mt-4">
           {submissions.length === 0 ? (
-            <p className="text-center text-gray-500">No unchecked submissions available.</p>
+            <p className="p-4 text-center text-customDark">No unchecked submissions available or loading, please wait.</p>
           ) : (
             submissions.map((submission) => (
-              <div key={submission._id} className="p-6 rounded-md border border-gray-300">
-                <h3 className="font-semibold">Exercise: {submission.exerciseName}</h3>
-                <p>
-                  Submitted by: {submission.firstName} {submission.lastName}
-                </p>
-                <p>Submitted on: {new Date(submission.createdAt).toLocaleString()}</p>
-                <div className="mt-4 flex gap-4">
+              <div key={submission._id} className="p-4">
+                <p><strong>Submitted by:</strong> {submission.firstName} {submission.lastName}</p>
+                <p><strong>Exercise:</strong> {submission.exerciseName}</p>
+                <p><strong>Submitted At:</strong> {new Date(submission.createdAt).toLocaleString()}</p>
+                <div className="flex gap-4 mt-2">
                   <Button
-                    variant="secondary"
+                    variant="primary"
                     onClick={() => downloadAudio(submission.fileUrl)}
                   >
                     Download Audio
@@ -94,9 +87,9 @@ const SpeakingReviewPage = () => {
                   <Button
                     variant="secondary"
                     onClick={() => goToCheckSpeaking(submission._id, submission.fileUrl)}
-                    >
+                  >
                     Check Speaking
-                    </Button>
+                  </Button>
                 </div>
               </div>
             ))
