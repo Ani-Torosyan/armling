@@ -192,7 +192,7 @@ const SpeakingPage = () => {
                 )}
 
                 {alreadyCompleted && (
-                  <p className="text-center text-green-600 mt-2 font-medium">
+                  <p className="text-center text-green-600 mt-4 font-medium">
                     You’ve already completed this speaking task.
                   </p>
                 )}

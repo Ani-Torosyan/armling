@@ -144,23 +144,10 @@ const WritingPage = () => {
           </div>
         </div>
       </FeedWrapper>
-      <div className="mt-6 flex flex-col items-center w-full">
+      <div className="mt-0 flex flex-col items-center w-full">
         {submitted ? (
           <>
             <p className="text-green-600 font-semibold">Thanks for submission of this exercise!</p>
-            {feedback ? (
-              <>
-                <Button
-                  variant="secondary"
-                  onClick={() => router.push("/review")}
-                  className="mt-4"
-                >
-                  View Review
-                </Button>
-              </>
-            ) : (
-              <p className="text-gray-600 mt-2">No feedback available yet.</p>
-            )}
           </>
         ) : (
           <Button variant="primary" onClick={handleSubmitAll} disabled={submitted}>
