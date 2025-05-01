@@ -180,7 +180,7 @@ const BooksPage = () => {
 
   return (
     <div className="p-6 bg-[#fdf4ed] min-h-screen">
-      <h1 className="text-3xl font-bold mb-4">Book Recommender</h1>
+      <h1 className="text-3xl font-bold mb-4">Recommended Books</h1>
 
       {/* Filter Popover */}
       <FilterPopover
