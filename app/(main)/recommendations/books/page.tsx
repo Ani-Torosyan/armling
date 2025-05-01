@@ -41,7 +41,7 @@ const FilterPopover = ({
   return (
     <div className="relative inline-block mb-6">
       <button
-        className="bg-white px-6 py-2 rounded-full shadow text-sm font-semibold hover:bg-gray-100 transition"
+        className="my-button px-6 py-2 text-sm font-semibold rounded-full"
         onClick={() => setIsOpen(!isOpen)}
       >
         FILTER
@@ -50,7 +50,7 @@ const FilterPopover = ({
       {isOpen && (
         <div
           ref={popoverRef}
-          className="absolute z-50 mt-3 w-80 bg-white rounded-xl shadow-xl p-4 space-y-4"
+          className="absolute z-50 mt-3 w-80 bg-white rounded-xl shadow-lg p-4 space-y-4"
         >
           <div>
             <h3 className="text-sm font-medium mb-2">Genres</h3>
@@ -62,7 +62,9 @@ const FilterPopover = ({
                     key={genre}
                     onClick={() => toggleGenre(genre)}
                     className={`px-3 py-1 rounded-full border text-xs whitespace-nowrap ${
-                      selected ? "bg-gray-900 text-white border-gray-900" : "border-gray-300 text-gray-700 hover:bg-gray-100"
+                      selected
+                        ? "bg-gray-900 text-white border-gray-900"
+                        : "border-gray-300 text-gray-700 hover:bg-gray-100"
                     }`}
                   >
                     {genre}
@@ -92,7 +94,7 @@ const FilterPopover = ({
           </div>
 
           <button
-            className="w-full mt-2 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
+            className="my-button w-full py-2 rounded-md"
             onClick={() => {
               fetchBooks();
               setIsOpen(false);
@@ -154,35 +156,32 @@ const BooksPage = () => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
   };
 
-  const getPageNumbers = (totalPages: number, currentPage: number) => {
+  const getPageNumbers = (total: number, current: number) => {
     const pages = [];
-
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    if (total <= 7) {
+      for (let i = 1; i <= total; i++) pages.push(i);
     } else {
       pages.push(1);
-      if (currentPage > 4) pages.push("...");
+      if (current > 4) pages.push("...");
       for (
-        let i = Math.max(2, currentPage - 1);
-        i <= Math.min(totalPages - 1, currentPage + 1);
+        let i = Math.max(2, current - 1);
+        i <= Math.min(total - 1, current + 1);
         i++
       ) {
         pages.push(i);
       }
-      if (currentPage < totalPages - 3) pages.push("...");
-      pages.push(totalPages);
+      if (current < total - 3) pages.push("...");
+      pages.push(total);
     }
-
     return pages;
   };
 
   const paginationPages = getPageNumbers(totalPages, currentPage);
 
   return (
-    <div className="p-6 bg-[#fdf4ed] min-h-screen">
+    <div className="p-6 min-h-screen">
       <h1 className="text-3xl font-bold mb-4">Recommended Books</h1>
 
-      {/* Filter Popover */}
       <FilterPopover
         genres={allGenres}
         levels={levels}
@@ -193,11 +192,9 @@ const BooksPage = () => {
         fetchBooks={fetchBooks}
       />
 
-      {/* Error & Loader */}
       {loading && <p>Loading...</p>}
       {error && <p className="text-red-500">{error}</p>}
 
-      {/* Books */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {!loading &&
           !error &&
@@ -209,7 +206,7 @@ const BooksPage = () => {
               rel="noopener noreferrer"
               className="transform hover:scale-105 transition-transform duration-300 block"
             >
-              <div className="flex flex-col h-full bg-white shadow-md rounded-xl overflow-hidden border hover:shadow-lg transition duration-300">
+              <div className="flex flex-col h-full bg-white shadow rounded-xl overflow-hidden hover:shadow-md transition duration-300">
                 <div className="h-64 w-full overflow-hidden bg-gray-100">
                   <img
                     src={book["Image URL"]}
@@ -230,13 +227,12 @@ const BooksPage = () => {
           ))}
       </div>
 
-      {/* Pagination */}
       {!loading && !error && totalPages > 1 && (
         <div className="flex justify-center mt-10 flex-wrap gap-2 items-center">
           <button
             onClick={() => handlePageClick(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-4 py-2 border rounded-md bg-white hover:bg-gray-100 disabled:opacity-50"
+            className="my-button disabled:opacity-50"
           >
             Previous
           </button>
@@ -246,8 +242,8 @@ const BooksPage = () => {
               <button
                 key={idx}
                 onClick={() => handlePageClick(page)}
-                className={`px-4 py-2 rounded-md border ${
-                  currentPage === page ? "bg-gray-900 text-white" : "bg-white hover:bg-gray-100"
+                className={`my-button ${
+                  currentPage === page ? "bg-gray-900 text-white" : ""
                 }`}
               >
                 {page}
@@ -260,7 +256,7 @@ const BooksPage = () => {
           <button
             onClick={() => handlePageClick(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="px-4 py-2 border rounded-md bg-white hover:bg-gray-100 disabled:opacity-50"
+            className="my-button disabled:opacity-50"
           >
             Next
           </button>
