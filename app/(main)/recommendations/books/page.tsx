@@ -58,7 +58,7 @@ const FilterPopover = ({
                 return (
                   <Button
                     key={genre}
-                    variant={selected ? "default" : "outline"}
+                    variant={selected ? "default" : "ghost"}
                     onClick={() => toggleGenre(genre)}
                     className="text-xs px-3 py-1 rounded-full"
                   >
@@ -75,7 +75,7 @@ const FilterPopover = ({
               {levels.map((level: string) => (
                 <Button
                   key={level}
-                  variant={selectedLevel === level ? "default" : "outline"}
+                  variant={selectedLevel === level ? "default" : "ghost"}
                   onClick={() => setSelectedLevel(level)}
                   className="text-sm px-4 py-1 rounded-full"
                 >
@@ -227,7 +227,7 @@ const BooksPage = () => {
               <Button
                 key={idx}
                 onClick={() => handlePageClick(page)}
-                variant={currentPage === page ? "default" : "outline"}
+                variant={currentPage === page ? "default" : "ghost"}
               >
                 {page}
               </Button>
