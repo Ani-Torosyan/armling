@@ -49,9 +49,7 @@ const BooksPage = () => {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const genreParam = selectedGenres.join(",") || ""; // Empty string if no genres are selected
-        const levelParam = selectedLevels.join(",") || "A1"; // Default to 'A1' if no level is selected
-    
+        setLoading(true);
         const res = await fetch("https://book-api-dh5c.onrender.com/recommend", {
           method: "POST",
           headers: {
@@ -62,14 +60,14 @@ const BooksPage = () => {
             levels: selectedLevels,
           }),
         });
-    
+
         if (!res.ok) {
           throw new Error(`HTTP error! Status: ${res.status}`);
         }
-    
+
         const json = await res.json();
         console.log("API Response:", json);
-    
+
         if (json.success) {
           setBooks(json.data);
         } else {
@@ -82,10 +80,9 @@ const BooksPage = () => {
         setLoading(false);
       }
     };
-    
 
     fetchBooks();
-  }, []);
+  }, [selectedGenres, selectedLevels]);
 
   const toggleGenre = (genre: string) => {
     setSelectedGenres((prev) =>
@@ -134,7 +131,6 @@ const BooksPage = () => {
         {showFilters && (
           <div className="flex flex-col space-y-6 mt-6">
             <div className="flex gap-6">
-              {/* Genre Filter */}
               <div className="w-1/2">
                 <h2 className="text-xl font-semibold">Filter by Genre</h2>
                 <div className="h-40 overflow-y-auto border rounded p-2">
@@ -156,7 +152,6 @@ const BooksPage = () => {
                 </div>
               </div>
 
-              {/* Level Filter */}
               <div className="w-1/2">
                 <h2 className="text-xl font-semibold">Filter by Level</h2>
                 <div className="h-40 overflow-y-auto border rounded p-2">
@@ -186,6 +181,9 @@ const BooksPage = () => {
 
         {!loading && !error && (
           <>
+            {filteredBooks.length === 0 && (
+              <p>No books found for the selected filters.</p>
+            )}
             <div className="space-y-4">
               {currentBooks.map((book) => {
                 const level = getCEFRLevel(book.Age);
@@ -242,4 +240,5 @@ const BooksPage = () => {
 };
 
 export default BooksPage;
+
 
