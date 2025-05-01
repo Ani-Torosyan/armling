@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import Loading from "../../loading";
 
 const allGenres = [
   "Դրամա", "Կենսագրություն", "Պոեզիա", "Պատմական գեղարվեստական գրականություն", "Կատակերգություն", "Ռոմանս",
@@ -9,7 +10,7 @@ const allGenres = [
   "Գիտական ֆանտաստիկա", "Արկածային", "Ֆանտաստիկա", "Մանկական գրականություն"
 ];
 
-const levels = ["A1", "A2", "B1", "B2", "C1", "C2"];
+const levels = ["A1", "A2", "B1", "B2", "C1"];
 
 const FilterPopover = ({
   genres,
@@ -42,8 +43,8 @@ const FilterPopover = ({
 
   return (
     <div className="relative inline-block mb-6">
-      <Button onClick={() => setIsOpen(!isOpen)}>
-        FILTER
+      <Button variant="secondary" onClick={() => setIsOpen(!isOpen)}>
+        Filter
       </Button>
 
       {isOpen && (
@@ -57,9 +58,9 @@ const FilterPopover = ({
               {genres.map((genre: string) => {
                 const selected = selectedGenres.includes(genre);
                 return (
-                  <Button
+                  <Button 
                     key={genre}
-                    variant={selected ? "default" : "ghost"}
+                    variant={selected ? "sidebarOutline" : "sidebar"}
                     onClick={() => toggleGenre(genre)}
                     className="text-xs px-3 py-1 rounded-full"
                   >
@@ -76,7 +77,7 @@ const FilterPopover = ({
               {levels.map((level: string) => (
                 <Button
                   key={level}
-                  variant={selectedLevel === level ? "default" : "ghost"}
+                  variant={selectedLevel === level ? "sidebarOutline" : "sidebar"}
                   onClick={() => setSelectedLevel(level)}
                   className="text-sm px-4 py-1 rounded-full"
                 >
@@ -86,7 +87,7 @@ const FilterPopover = ({
             </div>
           </div>
 
-          <Button onClick={() => { fetchBooks(); setIsOpen(false); }} className="w-full">
+          <Button variant="sidebar" onClick={() => { fetchBooks(); setIsOpen(false); }} className="w-full">
             Get Recommendations
           </Button>
         </div>
@@ -167,7 +168,7 @@ const BooksPage = () => {
 
   return (
     <div className="p-6 min-h-screen">
-      <h1 className="text-3xl font-bold mb-4">Recommended Books</h1>
+      <h2 className="text-2xl font-bold mb-4 mt-2 text-customDark">Recommended Books</h2>
 
       <FilterPopover
         genres={allGenres}
@@ -179,10 +180,18 @@ const BooksPage = () => {
         fetchBooks={fetchBooks}
       />
 
-      {loading && <p>Loading...</p>}
+      {loading && Loading()}
+      
       {error && <p className="text-red-500">{error}</p>}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+
+        {!loading && !error && books.length === 0 && (
+          <p className="text-customShade text-center col-span-full">
+            No books to recommend. Please adjust your filters and try again.
+          </p>
+        )}
+
         {!loading &&
           !error &&
           paginatedBooks.map((book, idx) => (
@@ -203,24 +212,26 @@ const BooksPage = () => {
                 </div>
                 <div className="flex flex-col justify-between flex-grow p-4">
                   <div>
-                    <h2 className="text-lg font-semibold">{book.Title}</h2>
-                    <p className="text-gray-600 text-sm">Author: {book.Author}</p>
-                    <p className="text-gray-600 text-sm">Genres: {book.Genres}</p>
+                    <h2 className="text-customDark text-lg font-semibold">{book.Title}</h2>
+                    <p className="text-customDark text-sm">Author: {book.Author}</p>
+                    <p className="text-customDark text-sm">Genres: {book.Genres}</p>
                   </div>
-                  <p className="text-gray-600 text-sm mt-2">Age: {book.Age}+</p>
+                  <p className="text-customDark text-sm mt-2">Age: {book.Age}+</p>
                 </div>
               </div>
             </a>
           ))}
       </div>
+      
 
       {!loading && !error && totalPages > 1 && (
         <div className="flex justify-center mt-10 flex-wrap gap-2 items-center">
           <Button
+            variant="ghost"
             onClick={() => handlePageClick(currentPage - 1)}
             disabled={currentPage === 1}
           >
-            Previous
+            <img src="/left.svg" alt="Back" className="w-4 h-4 mr-2" /> Previous
           </Button>
 
           {paginationPages.map((page, idx) =>
@@ -228,7 +239,7 @@ const BooksPage = () => {
               <Button
                 key={idx}
                 onClick={() => handlePageClick(page)}
-                variant={currentPage === page ? "default" : "ghost"}
+                variant={currentPage === page ? "sidebarOutline" : "sidebar"}
               >
                 {page}
               </Button>
@@ -238,10 +249,11 @@ const BooksPage = () => {
           )}
 
           <Button
+            variant="ghost"
             onClick={() => handlePageClick(currentPage + 1)}
             disabled={currentPage === totalPages}
           >
-            Next
+            Next  <img src="/right.svg" alt="Back" className="w-4 h-4 ml-2" />
           </Button>
         </div>
       )}
