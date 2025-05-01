@@ -35,9 +35,10 @@ const FilterPopover = ({
 
   const toggleGenre = (genre: string) => {
     setSelectedGenres((prev: string[]) =>
-      prev.includes(genre) ? prev.filter((g) => g !== genre) : [...prev, genre]
+      prev[0] === genre ? [] : [genre]
     );
   };
+  
 
   return (
     <div className="relative inline-block mb-6">
