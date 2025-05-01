@@ -48,30 +48,41 @@ const BooksPage = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-4">Recommended Books</h1>
+      <h1 className="text-3xl font-bold mb-6">Recommended Books</h1>
 
       {loading && <p>Loading...</p>}
       {error && <p className="text-red-500">{error}</p>}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {!loading && !error && books.map((book, idx) => (
-          <div
-            key={idx}
-            className="bg-white shadow-md rounded-xl overflow-hidden border hover:shadow-lg transition duration-300"
-          >
-            <img
-              src={book["Image URL"]}
-              alt={book.Title}
-              className="w-full h-64 object-cover"
-            />
-            <div className="p-4">
-              <h2 className="text-xl font-semibold">{book.Title}</h2>
-              <p className="text-gray-600">Author: {book.Author}</p>
-              <p className="text-gray-600">Genres: {book.Genres}</p>
-              <p className="text-gray-600">Age: {book.Age}+</p>
-            </div>
-          </div>
-        ))}
+        {!loading &&
+          !error &&
+          books.map((book, idx) => (
+            <a
+              key={idx}
+              href={book["Book URL"]}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transform hover:scale-105 transition-transform duration-300 block"
+            >
+              <div className="flex flex-col h-full bg-white shadow-md rounded-xl overflow-hidden border hover:shadow-lg transition duration-300">
+                <div className="h-64 w-full overflow-hidden bg-gray-100">
+                  <img
+                    src={book["Image URL"]}
+                    alt={book.Title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex flex-col justify-between flex-grow p-4">
+                  <div>
+                    <h2 className="text-xl font-semibold">{book.Title}</h2>
+                    <p className="text-gray-600">Author: {book.Author}</p>
+                    <p className="text-gray-600">Genres: {book.Genres}</p>
+                  </div>
+                  <p className="text-gray-600 mt-2">Age: {book.Age}+</p>
+                </div>
+              </div>
+            </a>
+          ))}
       </div>
     </div>
   );
