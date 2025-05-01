@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { Button } from "@/components/ui/button";
 
 const allGenres = [
   "Դրամա", "Կենսագրություն", "Պոեզիա", "Պատմական գեղարվեստական գրականություն", "Կատակերգություն", "Ռոմանս",
@@ -40,12 +41,9 @@ const FilterPopover = ({
 
   return (
     <div className="relative inline-block mb-6">
-      <button
-        className="my-button px-6 py-2 text-sm font-semibold rounded-full"
-        onClick={() => setIsOpen(!isOpen)}
-      >
+      <Button onClick={() => setIsOpen(!isOpen)}>
         FILTER
-      </button>
+      </Button>
 
       {isOpen && (
         <div
@@ -58,17 +56,14 @@ const FilterPopover = ({
               {genres.map((genre: string) => {
                 const selected = selectedGenres.includes(genre);
                 return (
-                  <button
+                  <Button
                     key={genre}
+                    variant={selected ? "default" : "outline"}
                     onClick={() => toggleGenre(genre)}
-                    className={`px-3 py-1 rounded-full border text-xs whitespace-nowrap ${
-                      selected
-                        ? "bg-gray-900 text-white border-gray-900"
-                        : "border-gray-300 text-gray-700 hover:bg-gray-100"
-                    }`}
+                    className="text-xs px-3 py-1 rounded-full"
                   >
                     {genre}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -78,30 +73,21 @@ const FilterPopover = ({
             <h3 className="text-sm font-medium mb-2">Levels</h3>
             <div className="flex flex-wrap gap-2">
               {levels.map((level: string) => (
-                <button
+                <Button
                   key={level}
+                  variant={selectedLevel === level ? "default" : "outline"}
                   onClick={() => setSelectedLevel(level)}
-                  className={`px-4 py-1 rounded-full border text-sm ${
-                    selectedLevel === level
-                      ? "bg-gray-900 text-white border-gray-900"
-                      : "border-gray-300 text-gray-700 hover:bg-gray-100"
-                  }`}
+                  className="text-sm px-4 py-1 rounded-full"
                 >
                   {level}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
 
-          <button
-            className="my-button w-full py-2 rounded-md"
-            onClick={() => {
-              fetchBooks();
-              setIsOpen(false);
-            }}
-          >
+          <Button onClick={() => { fetchBooks(); setIsOpen(false); }} className="w-full">
             Get Recommendations
-          </button>
+          </Button>
         </div>
       )}
     </div>
@@ -229,37 +215,33 @@ const BooksPage = () => {
 
       {!loading && !error && totalPages > 1 && (
         <div className="flex justify-center mt-10 flex-wrap gap-2 items-center">
-          <button
+          <Button
             onClick={() => handlePageClick(currentPage - 1)}
             disabled={currentPage === 1}
-            className="my-button disabled:opacity-50"
           >
             Previous
-          </button>
+          </Button>
 
           {paginationPages.map((page, idx) =>
             typeof page === "number" ? (
-              <button
+              <Button
                 key={idx}
                 onClick={() => handlePageClick(page)}
-                className={`my-button ${
-                  currentPage === page ? "bg-gray-900 text-white" : ""
-                }`}
+                variant={currentPage === page ? "default" : "outline"}
               >
                 {page}
-              </button>
+              </Button>
             ) : (
               <span key={idx} className="px-2 text-gray-500 font-semibold select-none">...</span>
             )
           )}
 
-          <button
+          <Button
             onClick={() => handlePageClick(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="my-button disabled:opacity-50"
           >
             Next
-          </button>
+          </Button>
         </div>
       )}
     </div>
