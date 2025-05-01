@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState, useRef } from "react";
 
 const allGenres = [
   "Դրամա", "Կենսագրություն", "Պոեզիա", "Պատմական գեղարվեստական գրականություն", "Կատակերգություն", "Ռոմանս",
@@ -10,6 +9,102 @@ const allGenres = [
 ];
 
 const levels = ["A1", "A2", "B1", "B2", "C1", "C2"];
+
+const FilterPopover = ({
+  genres,
+  levels,
+  selectedGenres,
+  setSelectedGenres,
+  selectedLevel,
+  setSelectedLevel,
+  fetchBooks,
+}: any) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const popoverRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popoverRef.current && !(popoverRef.current as any).contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const toggleGenre = (genre: string) => {
+    setSelectedGenres((prev: string[]) =>
+      prev.includes(genre) ? prev.filter((g) => g !== genre) : [...prev, genre]
+    );
+  };
+
+  return (
+    <div className="relative inline-block mb-6">
+      <button
+        className="bg-white px-6 py-2 rounded-full shadow text-sm font-semibold hover:bg-gray-100 transition"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        FILTER
+      </button>
+
+      {isOpen && (
+        <div
+          ref={popoverRef}
+          className="absolute z-50 mt-3 w-80 bg-white rounded-xl shadow-xl p-4 space-y-4"
+        >
+          <div>
+            <h3 className="text-sm font-medium mb-2">Genres</h3>
+            <div className="max-h-32 overflow-y-auto pr-1 flex flex-wrap gap-2">
+              {genres.map((genre: string) => {
+                const selected = selectedGenres.includes(genre);
+                return (
+                  <button
+                    key={genre}
+                    onClick={() => toggleGenre(genre)}
+                    className={`px-3 py-1 rounded-full border text-xs whitespace-nowrap ${
+                      selected ? "bg-gray-900 text-white border-gray-900" : "border-gray-300 text-gray-700 hover:bg-gray-100"
+                    }`}
+                  >
+                    {genre}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-medium mb-2">Levels</h3>
+            <div className="flex flex-wrap gap-2">
+              {levels.map((level: string) => (
+                <button
+                  key={level}
+                  onClick={() => setSelectedLevel(level)}
+                  className={`px-4 py-1 rounded-full border text-sm ${
+                    selectedLevel === level
+                      ? "bg-gray-900 text-white border-gray-900"
+                      : "border-gray-300 text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  {level}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button
+            className="w-full mt-2 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
+            onClick={() => {
+              fetchBooks();
+              setIsOpen(false);
+            }}
+          >
+            Get Recommendations
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const BooksPage = () => {
   const [books, setBooks] = useState<any[]>([]);
@@ -49,12 +144,6 @@ const BooksPage = () => {
     }
   };
 
-  const handleGenreToggle = (genre: string) => {
-    setSelectedGenres((prev) =>
-      prev.includes(genre) ? prev.filter((g) => g !== genre) : [...prev, genre]
-    );
-  };
-
   const totalPages = Math.ceil(books.length / booksPerPage);
   const paginatedBooks = books.slice(
     (currentPage - 1) * booksPerPage,
@@ -90,52 +179,19 @@ const BooksPage = () => {
   const paginationPages = getPageNumbers(totalPages, currentPage);
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-[#fdf4ed] min-h-screen">
       <h1 className="text-3xl font-bold mb-4">Book Recommender</h1>
 
-      {/* Filters */}
-      <div className="mb-6">
-<h2 className="text-lg font-medium mb-2">Select Genres</h2>
-<div className="max-h-40 overflow-y-auto pr-1 custom-scrollbar">
-  <div className="flex flex-wrap gap-2">
-    {allGenres.map((genre) => {
-      const isSelected = selectedGenres.includes(genre);
-      return (
-        <button
-          key={genre}
-          type="button"
-          onClick={() => handleGenreToggle(genre)}
-          className={`px-4 py-1 rounded-full text-sm font-normal transition-all border ${
-            isSelected
-              ? "bg-gray-900 text-white border-gray-900"
-              : "text-gray-700 border-gray-300 hover:bg-gray-100"
-          }`}
-        >
-          {genre}
-        </button>
-      );
-    })}
-  </div>
-</div>
-
-
-        <div className="mb-4">
-          <label className="block mb-1 font-semibold">Select Level</label>
-          <select
-            value={selectedLevel}
-            onChange={(e) => setSelectedLevel(e.target.value)}
-            className="border px-3 py-1 rounded-md"
-          >
-            {levels.map((level) => (
-              <option key={level} value={level}>
-                {level}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <Button onClick={fetchBooks}>Get Recommendations</Button>
-      </div>
+      {/* Filter Popover */}
+      <FilterPopover
+        genres={allGenres}
+        levels={levels}
+        selectedGenres={selectedGenres}
+        setSelectedGenres={setSelectedGenres}
+        selectedLevel={selectedLevel}
+        setSelectedLevel={setSelectedLevel}
+        fetchBooks={fetchBooks}
+      />
 
       {/* Error & Loader */}
       {loading && <p>Loading...</p>}
@@ -177,40 +233,37 @@ const BooksPage = () => {
       {/* Pagination */}
       {!loading && !error && totalPages > 1 && (
         <div className="flex justify-center mt-10 flex-wrap gap-2 items-center">
-          <Button
+          <button
             onClick={() => handlePageClick(currentPage - 1)}
             disabled={currentPage === 1}
-            variant="default"
+            className="px-4 py-2 border rounded-md bg-white hover:bg-gray-100 disabled:opacity-50"
           >
             Previous
-          </Button>
+          </button>
 
           {paginationPages.map((page, idx) =>
             typeof page === "number" ? (
-              <Button
+              <button
                 key={idx}
                 onClick={() => handlePageClick(page)}
-                variant={currentPage === page ? "default" : "ghost"}
+                className={`px-4 py-2 rounded-md border ${
+                  currentPage === page ? "bg-gray-900 text-white" : "bg-white hover:bg-gray-100"
+                }`}
               >
                 {page}
-              </Button>
+              </button>
             ) : (
-              <span
-                key={idx}
-                className="px-2 text-gray-500 font-semibold select-none"
-              >
-                ...
-              </span>
+              <span key={idx} className="px-2 text-gray-500 font-semibold select-none">...</span>
             )
           )}
 
-          <Button
+          <button
             onClick={() => handlePageClick(currentPage + 1)}
             disabled={currentPage === totalPages}
-            variant="default"
+            className="px-4 py-2 border rounded-md bg-white hover:bg-gray-100 disabled:opacity-50"
           >
             Next
-          </Button>
+          </button>
         </div>
       )}
     </div>
