@@ -29,11 +29,11 @@ const levels = ["A1", "A2", "B1", "B2", "C1", "C2"];
 const booksPerPage = 10;
 
 const getCEFRLevel = (age: number): string => {
-  if (age <= 6) return "A1";
-  if (age <= 9) return "A2";
-  if (age <= 12) return "B1";
-  if (age <= 15) return "B2";
-  if (age <= 18) return "C1";
+  if (age <= 7) return "A1";
+  if (age <= 11) return "A2";
+  if (age <= 15) return "B1";
+  if (age <= 17) return "B2";
+  if (age <= 25) return "C1";
   return "C2";
 };
 
@@ -49,19 +49,40 @@ const BooksPage = () => {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const res = await fetch("/api/bookrec");
+        const genreParam = selectedGenres.join(",") || ""; // Empty string if no genres are selected
+        const levelParam = selectedLevels.join(",") || "A1"; // Default to 'A1' if no level is selected
+    
+        const res = await fetch("https://book-api-dh5c.onrender.com/recommend", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            genres: selectedGenres,
+            levels: selectedLevels,
+          }),
+        });
+    
+        if (!res.ok) {
+          throw new Error(`HTTP error! Status: ${res.status}`);
+        }
+    
         const json = await res.json();
+        console.log("API Response:", json);
+    
         if (json.success) {
           setBooks(json.data);
         } else {
           setError("Failed to load books.");
         }
-      } catch (err) {
+      } catch (err: any) {
+        console.error("Fetch error:", err);
         setError("An error occurred while fetching books.");
       } finally {
         setLoading(false);
       }
     };
+    
 
     fetchBooks();
   }, []);
@@ -111,55 +132,54 @@ const BooksPage = () => {
         </div>
 
         {showFilters && (
-  <div className="flex flex-col space-y-6 mt-6">
-    <div className="flex gap-6">
-      {/* Genre Filter */}
-      <div className="w-1/2">
-        <h2 className="text-xl font-semibold">Filter by Genre</h2>
-        <div className="h-40 overflow-y-auto border rounded p-2">
-          <div className="flex flex-col gap-2">
-            {allGenres.map((genre) => (
-              <button
-                key={genre}
-                onClick={() => toggleGenre(genre)}
-                className={`px-3 py-1 rounded-md border text-sm text-left ${
-                  selectedGenres.includes(genre)
-                    ? "bg-green-600 text-white"
-                    : "bg-red-100"
-                }`}
-              >
-                {genre}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+          <div className="flex flex-col space-y-6 mt-6">
+            <div className="flex gap-6">
+              {/* Genre Filter */}
+              <div className="w-1/2">
+                <h2 className="text-xl font-semibold">Filter by Genre</h2>
+                <div className="h-40 overflow-y-auto border rounded p-2">
+                  <div className="flex flex-col gap-2">
+                    {allGenres.map((genre) => (
+                      <button
+                        key={genre}
+                        onClick={() => toggleGenre(genre)}
+                        className={`px-3 py-1 rounded-md border text-sm text-left ${
+                          selectedGenres.includes(genre)
+                            ? "bg-green-600 text-white"
+                            : "bg-red-100"
+                        }`}
+                      >
+                        {genre}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
 
-      {/* Level Filter */}
-      <div className="w-1/2">
-        <h2 className="text-xl font-semibold">Filter by Level</h2>
-        <div className="h-40 overflow-y-auto border rounded p-2">
-          <div className="flex flex-col gap-2">
-            {levels.map((level) => (
-              <button
-                key={level}
-                onClick={() => toggleLevel(level)}
-                className={`px-3 py-1 rounded-md border text-sm text-left ${
-                  selectedLevels.includes(level)
-                    ? "bg-green-600 text-white"
-                    : "bg-pink-100"
-                }`}
-              >
-                {level}
-              </button>
-            ))}
+              {/* Level Filter */}
+              <div className="w-1/2">
+                <h2 className="text-xl font-semibold">Filter by Level</h2>
+                <div className="h-40 overflow-y-auto border rounded p-2">
+                  <div className="flex flex-col gap-2">
+                    {levels.map((level) => (
+                      <button
+                        key={level}
+                        onClick={() => toggleLevel(level)}
+                        className={`px-3 py-1 rounded-md border text-sm text-left ${
+                          selectedLevels.includes(level)
+                            ? "bg-green-600 text-white"
+                            : "bg-pink-100"
+                        }`}
+                      >
+                        {level}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
-
+        )}
 
         {loading && <p>Loading...</p>}
         {error && <p className="text-red-500">{error}</p>}
@@ -222,3 +242,4 @@ const BooksPage = () => {
 };
 
 export default BooksPage;
+
