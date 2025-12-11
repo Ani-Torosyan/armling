@@ -34,22 +34,19 @@ const RecommendationsPage = () => {
 
                     <div className="relative group flex flex-col items-center justify-center rounded-lg overflow-hidden">
                         <div className="absolute top-0 left-0 right-0 p-4 bg-opacity-60 bg-customDark text-custom text-lg font-semibold text-center">
-                            <span className="text-lg font-light italic">Coming Soon!</span>
+                            Armenian Cinema
                         </div>
                         <button
-                            disabled
-                            className="w-full h-48 flex items-center justify-center bg-cover bg-center cursor-not-allowed"
+                            onClick={() => router.push("/recommendations/movies")}
+                            className="w-full h-48 flex items-center justify-center bg-cover bg-center"
                             style={{
+                                backgroundImage: `url('/movie.svg')`,
+                                backgroundSize: "25%",
                                 backgroundPosition: "center",
                                 backgroundRepeat: "no-repeat",
                             }}
                         >
-                            <div className="absolute inset-0 bg-customDark opacity-10"></div>
-                            <img
-                                src="/lock-and-chain.svg"
-                                alt="Locked"
-                                className="absolute h-[118%]"
-                            />
+                            <div className="absolute inset-0 bg-customDark opacity-10 group-hover:opacity-40 transition-opacity"></div>
                         </button>
                     </div>
                 </div>
